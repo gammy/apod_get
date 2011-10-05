@@ -1,7 +1,7 @@
 #/usr/bin/env perl
 # - Crop image to desktop
 # - Annotate message
-
+#
 # Programmatical:
 # - create empty canvas of desktop size
 # - load src image to new canvas
@@ -14,6 +14,9 @@
 #   - re-annotate text
 # - paste annotation canvas to top horizontal center of canvas
 # - store result
+#
+# Note: The variables need some serious cleanups. It's ridiculous.
+# by gammay
 
 use warnings;
 use strict;
@@ -35,8 +38,8 @@ use constant {
 };
 
 #my @text_bg_color = (64, 64, 128, 255);
-my @text_bg_color = (10, 10, 16, 255);
 #my @text_fg_color = (255, 255, 255, 255);
+my @text_bg_color = (10, 10, 16, 255);
 my @text_fg_color = (255, 255, 255, 255);
 
 if(@ARGV != 2) {
@@ -93,20 +96,22 @@ my $font = Imager::Font->new(file  => FONT_FILE,
 # Calculate size of annotation
 # Note that we cannot know the actual width of the text;
 # we can only pass our desired maximum width and this is what we get.
+
+# Padding for blurring to dissipate without clipping.
+my $pad_x = 30;
+my $pad_y = 30;
+
 my ($left, $top, $right, $bottom) =
 	Imager::Font::Wrap->wrap_text(string  => $text,
 				      font    => $font,
 				      image   => undef,
-				      width   => $src->getwidth(),
+				      width   => ($src->getwidth() - $pad_x),
 			              justify => 'left') or die Imager->errstr;
 
-# Add some space for blurring to dissipate without noticable clipping.
-my $pad_x = 20;
-my $pad_y = 20;
-my ($fw, $fh) = ($right + $pad_x, 
+my ($fw, $fh) = ($src->getwidth(), 
 		 $bottom + $pad_y);
 my $cx = .5 * $pad_x;
-my $cy = .5 * $pad_x;
+my $cy = .5 * $pad_y;
 
 # Create canvas with alpha channel for transparency
 my $canvas_text = Imager->new(xsize    => $fw,
@@ -117,7 +122,7 @@ my $canvas_text = Imager->new(xsize    => $fw,
 Imager::Font::Wrap->wrap_text(string => $text,
 			      font   => $font,
 			      image  => $canvas_text,
-			      width  => $src->getwidth(),
+			      width  => $src->getwidth() - $pad_x,
 			      x      => $cx,
 			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
@@ -135,7 +140,7 @@ $font->{color} = $font_color;
 Imager::Font::Wrap->wrap_text(string => $text,
 			      font   => $font,
 			      image  => $canvas_text,
-			      width  => $src->getwidth(),
+			      width  => $src->getwidth() - $pad_x,
 			      x      => $cx,
 			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
