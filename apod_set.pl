@@ -16,6 +16,21 @@
 # - store result
 #
 # Note: The variables need some serious cleanups. It's ridiculous.
+#
+# If one wanted to make this thing MORE FLEXIBLE, one could
+# - add an iption parser(GetOptions)
+# - make most internal existing components modifiable via opts. Such as
+#   - text fg/bg color/alphas (in form of hex string I guess)
+#   - solid/transparent canvas color (current is hardcoded transparent)
+#     - canvas bgcolor
+#   - font file and size
+#   - gaussian blur deviation factor
+#   - contrast intensity on annotation layer
+# .. and if one bothered doing that, one should really add some sort of box 
+#    model for annotations. options like -text-x, text-y, -text-w, test-h..
+#    since I just want this for this simple APOD script right now, it's not a
+#    requirement nor priority. 
+# 
 # by gammay
 
 use warnings;
@@ -156,5 +171,4 @@ $canvas_base->rubthrough(src => $canvas_text,
 			 ty => $offs_y) or die Imager->errstr;
 
 
-# Write output
 $canvas_base->write(file => "out.png") or die $canvas_base->errstr;

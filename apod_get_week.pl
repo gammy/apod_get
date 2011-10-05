@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+# DEPRECATED. Use apod_get_today.pl instead.
 # 
 # - Grab APOD feed (usually contains a weeks worth of items)
 # - For each item in the feed,
@@ -18,6 +19,8 @@ use XML::RSS::Parser;
 use constant BASE_URL  => 'http://apod.nasa.gov';
 use constant FEED_URL  => BASE_URL . "/apod.rss";
 use constant DST_PATH  => $ENV{HOME} . '/.APOD';
+use constant DSC_MARK  => 'Explanation:';
+
 
 if(! -e DST_PATH) {
 	mkdir DST_PATH, 0744 or die $!;
@@ -51,9 +54,9 @@ for my $item ($feed->query('//item')) {
 	}
 
 	my $img_url = BASE_URL . "/$1";
-	my $filename = substr($1, rindex($1, '/') + 1);
+	my $img_filename = substr($1, rindex($1, '/') + 1);
 
-	my $full_path = DST_PATH . "/$filename";
+	my $full_path = DST_PATH . "/$img_filename";
 
 	if(-e $full_path) {
 		print "already got it.\n";
@@ -62,7 +65,7 @@ for my $item ($feed->query('//item')) {
 
 	my $img_data = get($img_url) or die "failed to get \"$img_url\"";
 
-	open F, '>', DST_PATH . "/$filename" or die $!;
+	open F, '>', DST_PATH . "/$img_filename" or die $!;
 	print F $img_data;
 	close F;
 	
