@@ -7,9 +7,11 @@
 # - load src image to new canvas
 #   - crop image to height of empty canvas if it's taller than desktop
 # - paste image to horizontal center of empty canvas
-# - create new transparent canvas with the annotation text wrapped
-#   - blur 5x or so
-#   - re-annotate text wrapped over blur
+# - create transparent canvas with the annotation text wrapped
+#   - apply heavy gaussian blur to "smear" the text out for
+#     use as a 'shadow' for the text
+#   - increase contrast (does it saturate?)
+#   - re-annotate text
 # - paste annotation canvas to top horizontal center of canvas
 # - store result
 
@@ -28,10 +30,13 @@ use constant {
 	FONT_NAME   => '',
 	FONT_PTS    => 14,
 	FONT_FILE   => './font/Istok-Regular.ttf',
-	BLUR_DEV    => 4.5 # Higher = more
+	BLUR_DEV    => 4.0, # Higher = more smeared background blur
+	INTENSITY   => 9.0  # Higher = more contrast on background blur
 };
 
-my @text_bg_color = (0, 0, 128, 255);
+#my @text_bg_color = (64, 64, 128, 255);
+my @text_bg_color = (10, 10, 16, 255);
+#my @text_fg_color = (255, 255, 255, 255);
 my @text_fg_color = (255, 255, 255, 255);
 
 if(@ARGV != 2) {
@@ -61,7 +66,7 @@ printf("Resolution of screen %d: %dx%d\n", SCREEN_NUM, $w, $h);
 # Create empty canvas
 my $canvas_base = Imager->new(xsize    => $w,
 			      ysize    => $h,
-			      channels => 3) or die Imager->errstr;
+			      channels => 4) or die Imager->errstr;
 
 # Load source image
 my $src = Imager->new(file     => $filename,
@@ -86,15 +91,22 @@ my $font = Imager::Font->new(file  => FONT_FILE,
 			     color => $font_color) or die Imager->errstr;
 
 # Calculate size of annotation
+# Note that we cannot know the actual width of the text;
+# we can only pass our desired maximum width and this is what we get.
 my ($left, $top, $right, $bottom) =
-	Imager::Font::Wrap->wrap_text(string => $text,
-				      font   => $font,
-				      image  => undef,
-				      width  => $src->getwidth()) or die Imager->errstr;
+	Imager::Font::Wrap->wrap_text(string  => $text,
+				      font    => $font,
+				      image   => undef,
+				      width   => $src->getwidth(),
+			              justify => 'left') or die Imager->errstr;
 
-# Add some space for blurring to dissipate without hard edges
-my ($fw, $fh) = ($right + ($right / 25), 
-		 $bottom + ($bottom / 25));
+# Add some space for blurring to dissipate without noticable clipping.
+my $pad_x = 20;
+my $pad_y = 20;
+my ($fw, $fh) = ($right + $pad_x, 
+		 $bottom + $pad_y);
+my $cx = .5 * $pad_x;
+my $cy = .5 * $pad_x;
 
 # Create canvas with alpha channel for transparency
 my $canvas_text = Imager->new(xsize    => $fw,
@@ -106,13 +118,15 @@ Imager::Font::Wrap->wrap_text(string => $text,
 			      font   => $font,
 			      image  => $canvas_text,
 			      width  => $src->getwidth(),
+			      x      => $cx,
+			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
 
 # Blur
 $canvas_text->filter(type => 'gaussian',
 		     stddev => BLUR_DEV) or die $canvas_text->errstr;
 $canvas_text->filter(type => 'contrast',
-		     intensity => 3.0) or die $canvas_text->errstr;
+		     intensity => INTENSITY) or die $canvas_text->errstr;
 
 # Re-annotate 
 undef $font_color;
@@ -122,18 +136,20 @@ Imager::Font::Wrap->wrap_text(string => $text,
 			      font   => $font,
 			      image  => $canvas_text,
 			      width  => $src->getwidth(),
+			      x      => $cx,
+			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
 
-$offs_x = (.5 * $w) - (.5 * $src->getwidth());
-$offs_y = 0;
+# Paste (blending alpha channel via rubthrough) text on to main canvas.
+# It would be nice if some alignment options were available here:
+# top/bottom, for instance.
+$offs_x = (.5 * $w) - (.5 * $fw); # Center
+# $offs_y = 0; # Top
+$offs_y = $h - $fh; # Bottom
 $canvas_base->rubthrough(src => $canvas_text,
 			 tx => $offs_x,
 			 ty => $offs_y) or die Imager->errstr;
 
-
-##my $c = Imager::Color->new(0, 0, 0, 0);
-##$canvas_text->fill($c);
-#print "dims: $left, $top, $right, $bottom\n";
 
 # Write output
 $canvas_base->write(file => "out.png") or die $canvas_base->errstr;
