@@ -45,29 +45,28 @@ for my $item ($feed->query('//item')) {
 	# We won't use the 'img src' since this is usually cropped.
 	# In case they show a video or something, I assume they don't
 	# have them in the "image/"-directory.
-	if($tmp=~m#a href="(image/.+?)"#si) {
-
-		my $img_url = BASE_URL . "/$1";
-		my $filename = substr($1, rindex($1, '/') + 1);
-
-		my $full_path = DST_PATH . "/$filename";
-
-		if(-e $full_path) {
-			print "already got it.\n";
-			next;
-		}
-
-		my $img_data = get($img_url) or die "failed to get \"$img_url\"";
-
-		open F, '>', DST_PATH . "/$filename" or die $!;
-		print F $img_data;
-		close F;
-		
-		print "ok.\n";
-	} else {
-		print "contains no image.\n"
+	unless($tmp=~m#a href="(image/.+?)"#si) {
+		print "contains no image.\n";
+		next;
 	}
 
+	my $img_url = BASE_URL . "/$1";
+	my $filename = substr($1, rindex($1, '/') + 1);
+
+	my $full_path = DST_PATH . "/$filename";
+
+	if(-e $full_path) {
+		print "already got it.\n";
+		next;
+	}
+
+	my $img_data = get($img_url) or die "failed to get \"$img_url\"";
+
+	open F, '>', DST_PATH . "/$filename" or die $!;
+	print F $img_data;
+	close F;
+	
+	print "ok.\n";
 }
 
 $| = 0;
