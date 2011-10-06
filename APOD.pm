@@ -131,8 +131,9 @@ sub start {
 
 	if($tagname eq 'p') {
 		if($text_buf =~m/Explanation:/s) {
+			$text_buf =~s/\n+/\n/g;
+			$text_buf =~s/\n/ /g;
 			$text_buf =~s/ +/ /g;
-			$text_buf =~s/\n+//g;
 			$text_buf =~s/^ //g;
 			$text_buf =~s/ $//g;
 			$self->{description} = $text_buf;
