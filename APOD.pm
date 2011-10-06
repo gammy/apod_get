@@ -131,11 +131,13 @@ sub start {
 
 	if($tagname eq 'p') {
 		if($text_buf =~m/Explanation:/s) {
+			# The order of these is not random.
 			$text_buf =~s/\n+/\n/g;
 			$text_buf =~s/\n/ /g;
 			$text_buf =~s/ +/ /g;
 			$text_buf =~s/^ //g;
 			$text_buf =~s/ $//g;
+			$text_buf =~s/^Explanation: //;
 			$self->{description} = $text_buf;
 		
 		}

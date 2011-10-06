@@ -120,10 +120,12 @@ my ($left, $top, $right, $bottom) =
 	Imager::Font::Wrap->wrap_text(string  => $text,
 				      font    => $font,
 				      image   => undef,
-				      width   => ($src->getwidth() - $pad_x),
+				      #width  => $src->getwidth() - $pad_x,
+				      width  => $w - $pad_x,
 			              justify => 'left') or die Imager->errstr;
 
-my ($fw, $fh) = ($src->getwidth(), 
+my ($fw, $fh) = ($w, 
+#my ($fw, $fh) = ($src->getwidth(), 
 		 $bottom + $pad_y);
 my $cx = .5 * $pad_x;
 my $cy = .5 * $pad_y;
@@ -137,7 +139,8 @@ my $canvas_text = Imager->new(xsize    => $fw,
 Imager::Font::Wrap->wrap_text(string => $text,
 			      font   => $font,
 			      image  => $canvas_text,
-			      width  => $src->getwidth() - $pad_x,
+                              #width  => $src->getwidth() - $pad_x,
+			      width  => $w - $pad_x,
 			      x      => $cx,
 			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
@@ -155,7 +158,8 @@ $font->{color} = $font_color;
 Imager::Font::Wrap->wrap_text(string => $text,
 			      font   => $font,
 			      image  => $canvas_text,
-			      width  => $src->getwidth() - $pad_x,
+                              #width  => $src->getwidth() - $pad_x,
+			      width  => $w - $pad_x,
 			      x      => $cx,
 			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
