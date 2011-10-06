@@ -49,7 +49,8 @@ use constant {
 	FONT_PTS    => 14,
 	FONT_FILE   => './font/Istok-Regular.ttf',
 	BLUR_DEV    => 4.0, # Higher = more smeared background blur
-	INTENSITY   => 9.0  # Higher = more contrast on background blur
+	INTENSITY   => 9.0,  # Higher = more contrast on background blur
+	JUSTIFY     => 'fill'
 };
 
 #my @text_bg_color = (64, 64, 128, 255);
@@ -121,8 +122,8 @@ my ($left, $top, $right, $bottom) =
 				      font    => $font,
 				      image   => undef,
 				      #width  => $src->getwidth() - $pad_x,
-				      width  => $w - $pad_x,
-			              justify => 'left') or die Imager->errstr;
+				      width   => $w - $pad_x,
+			              justify => JUSTIFY) or die Imager->errstr;
 
 my ($fw, $fh) = ($w, 
 #my ($fw, $fh) = ($src->getwidth(), 
@@ -141,6 +142,7 @@ Imager::Font::Wrap->wrap_text(string => $text,
 			      image  => $canvas_text,
                               #width  => $src->getwidth() - $pad_x,
 			      width  => $w - $pad_x,
+			      justify => JUSTIFY,
 			      x      => $cx,
 			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
@@ -160,6 +162,7 @@ Imager::Font::Wrap->wrap_text(string => $text,
 			      image  => $canvas_text,
                               #width  => $src->getwidth() - $pad_x,
 			      width  => $w - $pad_x,
+			      justify => JUSTIFY,
 			      x      => $cx,
 			      y      => $cy,
 			      aa     => 1) or die Imager->errstr;
