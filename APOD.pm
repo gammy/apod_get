@@ -154,7 +154,6 @@ sub start {
 sub text {
 	my ($self, $text) = @_;
 	$text_buf .= $text;
-
 }
 
 1;
