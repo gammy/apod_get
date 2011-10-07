@@ -12,6 +12,7 @@ use X11::Resolution;
 use Imager;
 use Imager::Fill;
 use Imager::Font::Wrap;
+use Data::Dumper;
 
 my %opts = (
 	"text_bg"          => '0a0a10',
@@ -216,11 +217,16 @@ if($src{h} > $dst{h}) {
 	$src{data} = $tmp;
 }
 
+($src{w}, $src{h}) = ($src{data}->getwidth(), 
+		      $src{data}->getheight());
+
 # Paste scaled image to center of canvas
 # TODO take $opts{halign} into account
 my $offs_x = (.5 * $dst{w}) - (.5 * $src{w});
 my $offs_y = (.5 * $dst{h}) - (.5 * $src{h});
 
+print Dumper(%dst);
+print Dumper(%src);
 $dst{data}->paste(left => $offs_x,
 		  top  => $offs_y,
 		  src  => $src{data}) or die $dst{data}->errstr;
@@ -242,7 +248,7 @@ my $pad_y = 30;
 my ($l, $r); # FIXME
 ($l, $r, $txt{w}, $txt{h}) =
 	Imager::Font::Wrap->wrap_text(string  => $opts{text},
-				      font    => $opts{font},
+				      font    => $txt{font},
 				      image   => undef,
 				      #width  => $img_src->getwidth() - $pad_x,
 				      width   => $dst{w} - $pad_x,
@@ -263,7 +269,7 @@ $txt{data} = Imager->new(xsize    => $txt{w},
 
 # Annotate text
 Imager::Font::Wrap->wrap_text(string  => $opts{text},
-			      font    => $opts{font},
+			      font    => $txt{font},
 			      image   => $txt{data},
                               #width  => $img_src->getwidth() - $pad_x,
 			      width   => $dst{w} - $pad_x,
@@ -285,7 +291,7 @@ undef $txt{color};
 $txt{color} = Imager::Color->new(@text_color_fg);
 $txt{font}->{color} = $txt{color};
 Imager::Font::Wrap->wrap_text(string  => $opts{text},
-			      font    => $opts{font},
+			      font    => $txt{font},
 			      image   => $txt{data},
                               #width  => $img_src->getwidth() - $pad_x,
 			      width   => $dst{w} - $pad_x,

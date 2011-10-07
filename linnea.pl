@@ -171,7 +171,7 @@ Imager::Font::Wrap->wrap_text(string => $text,
 # It would be nice if some alignment options were available here:
 # top/bottom, for instance.
 $offs_x = (.5 * $w) - (.5 * $fw); # Center
-# $offs_y = 0; # Top
+#$offs_y = 0; # Top
 $offs_y = $h - $fh; # Bottom
 $canvas_base->rubthrough(src => $canvas_text,
 			 tx => $offs_x,
