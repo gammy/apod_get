@@ -225,8 +225,6 @@ if($src{h} > $dst{h}) {
 my $offs_x = (.5 * $dst{w}) - (.5 * $src{w});
 my $offs_y = (.5 * $dst{h}) - (.5 * $src{h});
 
-print Dumper(%dst);
-print Dumper(%src);
 $dst{data}->paste(left => $offs_x,
 		  top  => $offs_y,
 		  src  => $src{data}) or die $dst{data}->errstr;
@@ -256,7 +254,7 @@ my ($l, $r); # FIXME
 
 # TODO needs to take $opts into account 
 ($txt{w}, $txt{h}) = ($dst{w}, 
-		      $dst{w} + $pad_y);
+		      $txt{h} + $pad_y);
 
 # TODO cleanup
 my $cx = .5 * $pad_x;
@@ -305,7 +303,7 @@ Imager::Font::Wrap->wrap_text(string  => $opts{text},
 # top/bottom, for instance.
 # TODO: take $opts into account
 $offs_x = (.5 * $dst{w}) - (.5 * $txt{w}); # Center
-# $offs_y = 0; # Top
+#$offs_y = 0; # Top
 $offs_y = $dst{h} - $txt{h}; # Bottom
 
 $dst{data}->rubthrough(src => $txt{data},
