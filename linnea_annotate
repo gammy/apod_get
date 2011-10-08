@@ -3,7 +3,7 @@
 #
 # Other ideas:
 # - Clip text to canvas -or- to original image (--clip=desktop, --clip=source)
-#
+# by gammy.
 use warnings;
 use strict;
 

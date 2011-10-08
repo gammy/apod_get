@@ -1,0 +1,37 @@
+A quick description of the content of this repo.
+
+FILES:
+
+APOD.pm:
+	A Perl module for accessing the Astronomy Picture Of the Day as
+	well as its description.
+
+apod_get:
+	A Perl script which, by using APOD.pm, saves the image and 
+	description file in the current directory.
+
+apod_desktop:
+	A bash script for setting an annotated version of the APOD image
+	as the desktop background. In essence it runs apod_get in a 
+	specific directory(~/.APOD/new/) and then annotates the APOD
+	description to the image (into ~/.APOD/) via linnea_annotate.
+	It then sets the background via any method set in
+	background_set() (see the script itself to change it)
+
+linnea_annotate:
+	Although this turned out as a part of the APOD code, it's now
+	completely unrelated and should probably be moved to its own
+	repository.
+
+	It's a basic text annotator. It takes an input image and text,
+	annotates the text onto it and produces an output image.
+	It can do some helping stuff, like automatically create an output
+	image which is the same size as the current desktop.
+
+NOTES:
+
+Most of this stuff assumes that the files are globally installed, meaning
+that APOD.pm needs to go into your perl module path.
+
+For apod_desktop to run, apod_desktop and linnea_annotate need to be
+globally installed (in, say, /usr/local/bin/ or the like).
