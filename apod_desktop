@@ -1,0 +1,39 @@
+#!/bin/bash
+
+path_storage=~/.APOD
+path_new=${path_storage}/new
+file_out=${path_storage}/annotated.png
+
+trap boom INT TERM
+
+set_background() {
+	return;
+	# Appropriate for gnome
+	# Appropriate for pekwm
+}
+
+boom() {
+	echo "Fatal error."
+	exit 1
+}
+
+if [ ! -e ${path_storage} ]; then
+	mkdir -p ${path_storage} || echo "Can't create \"${path_storage}\""
+	mkdir -p ${path_new} || echo "Can't create \"${path_new}\""
+fi
+
+cd ${path_new}
+rm ${path_new}/*
+
+apod_get
+
+file_txt=$(find      -iname "*.txt" | tail -n1)
+file_img=$(find -not -iname "*.txt" | tail -n1)
+
+linnea_annotate --text-file=${file_txt}\
+                ${file_img}\
+		${file_out}
+
+set_background
+
+echo All done!
