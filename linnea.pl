@@ -1,181 +1,320 @@
 #/usr/bin/env perl
-# - Crop image to desktop
-# - Annotate message
+# Linnea, a close-minded image annotator.
 #
-# Programmatical:
-# - create empty canvas of desktop size
-# - load src image to new canvas
-#   - crop image to height of empty canvas if it's taller than desktop
-# - paste image to horizontal center of empty canvas
-# - create transparent canvas with the annotation text wrapped
-#   - apply heavy gaussian blur to "smear" the text out for
-#     use as a 'shadow' for the text
-#   - increase contrast (does it saturate?)
-#   - re-annotate text
-# - paste annotation canvas to top horizontal center of canvas
-# - store result
+# Other ideas:
+# - Clip text to canvas -or- to original image (--clip=desktop, --clip=source)
 #
-# Note: The variables need some serious cleanups. It's ridiculous.
-#
-# If one wanted to make this thing MORE FLEXIBLE, one could
-# - add an iption parser(GetOptions)
-# - make most internal existing components modifiable via opts. Such as
-#   - text fg/bg color/alphas (in form of hex string I guess)
-#   - solid/transparent canvas color (current is hardcoded transparent)
-#     - canvas bgcolor
-#   - font file and size
-#   - gaussian blur deviation factor
-#   - contrast intensity on annotation layer
-# .. and if one bothered doing that, one should really add some sort of box 
-#    model for annotations. options like -text-x, text-y, -text-w, test-h..
-#    since I just want this for this simple APOD script right now, it's not a
-#    requirement nor priority. 
-# 
-# by gammay
-
 use warnings;
 use strict;
 
-use Data::Dumper;
+use Carp;
+use Getopt::Long;
+
 use X11::Resolution;
+
 use Imager;
 use Imager::Fill;
 use Imager::Font::Wrap;
-#use Image::Magick;
+use Data::Dumper;
 
-use constant { 
-	SCREEN_NUM  => 0,
-	FONT_NAME   => '',
-	FONT_PTS    => 14,
-	FONT_FILE   => './font/Istok-Regular.ttf',
-	BLUR_DEV    => 4.0, # Higher = more smeared background blur
-	INTENSITY   => 9.0,  # Higher = more contrast on background blur
-	JUSTIFY     => 'fill'
-};
+my %opts = (
+	"text_bg"          => '0a0a10',
+	"text_fg"          => 'ffffff',
+	"text"             => '',
+	"text_file"        => '',
+	"font_pts"         => 14,
+	"font_file"        => './font/Istok-Regular.ttf',
+	"screen"           => 0,
+	"size"             => '0x0',
+	"desktop-size"     => 0,
+	"text_bg_blur"     => 4.0,
+	"text_bg_contrast" => 9.0,
+	"bg"               => '',
+	"valign"           => 'top',    # top center bottom
+	"halign"           => 'center', # left center right # TODO
+	"justify"          => 'fill',   # left center right fill
+);
 
-#my @text_bg_color = (64, 64, 128, 255);
-#my @text_fg_color = (255, 255, 255, 255);
-my @text_bg_color = (10, 10, 16, 255);
-my @text_fg_color = (255, 255, 255, 255);
+sub help {
+
+	printf("Usage: %s [args] <input-file> <output-file>
+  --text-bg           text backdrop coloring     (default '%s')
+  --text-fg           text forgeground color     (default '%s')
+  --text              text                       (default '%s')
+  --text-file         file containing text       (default '%s')
+  --font-pts          point size of font         (default '%s')
+  --font-file         font file                  (default '%s')
+  --screen            screen number              (default %d)
+  --size              output size       (default original size)
+  --desktop-size      use desktop size as output size
+  --text-bg-blur      bg gaussian blur intensity (default %f)
+  --text-bg-contrast  bg contrast intensity      (default %f)
+  --bg                bg solid color             (default none)
+  --valign            vertical text alignment    (default '%s')
+  --halign            horizontal text alignment  (default '%s')
+  --justify           text justification method  (default '%s')
+", 
+	$0,
+	$opts{text_bg},
+	$opts{text_fg},
+	$opts{text},
+	$opts{text_file},
+	$opts{font_pts},
+	$opts{font_file},
+	$opts{screen},
+	$opts{text_bg_blur},
+	$opts{text_bg_contrast},
+	$opts{valign},
+	$opts{halign},
+	$opts{justify});
+
+}
+
+# Input : 6-character hex string (0a1fff) 
+# Return: decimal rgb-triplet array 
+sub color_parse {
+	my $color = lc shift;
+	if(length($color) != 6) {
+		croak "Bad color '$color': " . 
+		      "format is rrggbb where each 'xx'-pair is a hex-value";
+	}
+	my @colors;
+	push @colors, hex substr($color, $_, 2) for (0, 2, 4);
+
+	return @colors;
+}
+
+sub resolution_parse {
+	my $in = lc shift;
+	my @out = split /x/, $in;
+	for (@out) {
+		croak "Bad size '$in': format is WxH" if /[^\d]/;
+	}
+	return @out;
+}
+
+sub resolution_get {
+	my $screen = shift;
+
+	my $X = new X11::Resolution;
+
+	if($X->{error}){
+		croak "Can't instantiate X11::Resolution: " . $X->{errorString};
+	}
+
+	my ($w, $h) = $X->getResolution($screen);
+
+	if($X->{error}){
+		croak "Can't get X resolution: " . $X->{errorString};
+	}
+
+	return($w, $h);
+}
+##############################################################################
+
+my $result = GetOptions ("text-bg=s"          => \$opts{text_bg},
+	                 "text-fg=s"          => \$opts{text_fg},
+	                 "text=s"             => \$opts{text},
+	                 "text-file=s"        => \$opts{text_file},
+	                 "font-pts=i"         => \$opts{text_pts},
+	                 "font-file=s"        => \$opts{font_file},
+	                 "screen=i"           => \$opts{screen},
+	                 "size=s"             => \$opts{size},
+	                 "desktop-size"       => \$opts{desktop_size},
+	                 "text-bg-blur=f"     => \$opts{text_bg_blur},
+	                 "text-bg-contrast=f" => \$opts{text_bg_contrast},
+	                 "bg=s"               => \$opts{bg},
+	                 "valign=s"           => \$opts{valign},
+	                 "halign=s"           => \$opts{halign},
+	                 "justify=s"          => \$opts{justify},
+			 );
 
 if(@ARGV != 2) {
-	die "Usage: $0 <filename> <text>\n";
+	help();
+	exit;
 }
 
-my ($filename, $text) = @ARGV;
+# Container hashes
+my %src = (
+	w    => 0,
+	h    => 0,
+	data => undef,
+);
+my %txt = (
+	w    => 0,
+	h    => 0,
+	data => undef,
+	color=> undef,
+	font => undef,
+);
+my %dst = (
+	file => '',
+	w    => 0,
+	h    => 0,
+	data => undef,
+);
 
-if(! -e $filename) {
-	die "Can't find \"$filename\"";
+($src{file}, $dst{file}) = @ARGV;
+my @text_color_fg        = color_parse($opts{text_fg});
+my @text_color_bg        = color_parse($opts{text_bg});
+my @color_bg;
+if($opts{bg} ne '') {
+	@color_bg     = color_parse($opts{bg});
+}
+($dst{w}, $dst{h})       = resolution_parse($opts{size});
+
+if($opts{text_file} ne '') {
+	
+	if($opts{text} ne '') {
+		print "Overriding supplied --text with data in " .
+		      "\"$opts{text_file}\"\n";
+	}
+
+	$opts{text} = '';
+
+	open F, '<', $opts{text_file} 
+		or croak "Can't open \"$opts{text_file}\": $!";
+
+	$opts{text} .= $_ for <F>; 
+
+	close F;
+
 }
 
-## Get resolution
-my $X = new X11::Resolution;
-if($X->{error}){
-	die "Can't instantiate X11::Resolution: " . $X->{errorString};
+if($opts{desktop_size}) {
+	($dst{w}, $dst{h}) = resolution_get($opts{screen});
 }
 
-my ($w, $h) = $X->getResolution(SCREEN_NUM);
-
-if($X->{error}){
-	die "Can't get X resolution: " . $X->{errorString};
-}
-
-printf("Resolution of screen %d: %dx%d\n", SCREEN_NUM, $w, $h);
-
-# Create empty canvas
-my $canvas_base = Imager->new(xsize    => $w,
-			      ysize    => $h,
-			      channels => 4) or die Imager->errstr;
+##############################################################################
 
 # Load source image
-my $src = Imager->new(file     => $filename,
-		      channels => 4) or die Imager->errstr;
+$src{image} = Imager->new(file     => $src{file},
+			 channels => 4) or die Imager->errstr;
 
-# Scale it to fit height if necessary
-if($src->getheight() > $h) {
-	my $tmp = $src->scale(ypixels => $h) or die Imager->errstr;
-	$src = $tmp;
+($src{w}, $src{h}) = ($src{image}->getwidth(), 
+		      $src{image}->getheight());
+
+# Set size of dst to src 
+if(! $opts{desktop_size}) {
+	($dst{w}, $dst{h}) = ($src{w}, $src{h});
 }
 
-# Paste scaled image to center of canvas
-my $offs_x = (.5 * $w) - (.5 * $src->getwidth());
-my $offs_y = (.5 * $h) - (.5 * $src->getheight());
-$canvas_base->paste(left => $offs_x,
-		    top  => $offs_y,
-		    src  => $src) or die $canvas_base->errstr;
+# Create empty destination canvas
+$dst{image} = Imager->new(xsize    => $dst{w},
+			 ysize    => $dst{h},
+			 channels => 4) or die Imager->errstr;
 
-my $font_color = Imager::Color->new(@text_bg_color);
-my $font = Imager::Font->new(file  => FONT_FILE,
-			     size  => FONT_PTS,
-			     color => $font_color) or die Imager->errstr;
+# Scale it to fit height if necessary
+if($src{h} > $dst{h}) {
+	my $tmp = $src{image}->scale(ypixels => $dst{h}) or die Imager->errstr;
+	$src{image} = $tmp;
+
+	($src{w}, $src{h}) = ($src{image}->getwidth(), $src{image}->getheight());
+}
+
+# Set background color if there's a visible canvas
+if($src{w} < $dst{w} || $src{h} < $dst{h}) {
+	if($opts{bg} ne '') {
+		my $color = Imager::Color->new(@color_bg) or die;
+		$dst{image}->box(color  => $color,
+		                 filled => 1) or die Imager::errstr;
+
+	}
+}
+
+
+# Paste scaled image to center of canvas
+# TODO take $opts{halign} into account
+my $offs_x = (.5 * $dst{w}) - (.5 * $src{w});
+my $offs_y = (.5 * $dst{h}) - (.5 * $src{h});
+
+$dst{image}->paste(left => $offs_x,
+		  top  => $offs_y,
+		  src  => $src{image}) or die $dst{image}->errstr;
+
+$txt{color} = Imager::Color->new(@text_color_bg);
+$txt{font} = Imager::Font->new(file  => $opts{font_file},
+			       size  => $opts{font_pts},
+			       color => $txt{color}) or die Imager->errstr;
 
 # Calculate size of annotation
 # Note that we cannot know the actual width of the text;
 # we can only pass our desired maximum width and this is what we get.
 
 # Padding for blurring to dissipate without clipping.
+# TODO cleanup
 my $pad_x = 30;
 my $pad_y = 30;
 
-my ($left, $top, $right, $bottom) =
-	Imager::Font::Wrap->wrap_text(string  => $text,
-				      font    => $font,
+my ($l, $r); # FIXME
+($l, $r, $txt{w}, $txt{h}) =
+	Imager::Font::Wrap->wrap_text(string  => $opts{text},
+				      font    => $txt{font},
 				      image   => undef,
-				      #width  => $src->getwidth() - $pad_x,
-				      width   => $w - $pad_x,
-			              justify => JUSTIFY) or die Imager->errstr;
+				      #width  => $img_src->getwidth() - $pad_x,
+				      width   => $dst{w} - $pad_x,
+			              justify => $opts{justify}) or die Imager->errstr;
 
-my ($fw, $fh) = ($w, 
-#my ($fw, $fh) = ($src->getwidth(), 
-		 $bottom + $pad_y);
+($txt{w}, $txt{h}) = ($dst{w}, 
+		      $txt{h} + $pad_y);
+
 my $cx = .5 * $pad_x;
 my $cy = .5 * $pad_y;
 
 # Create canvas with alpha channel for transparency
-my $canvas_text = Imager->new(xsize    => $fw,
-			      ysize    => $fh, 
-			      channels => 4) or die Imager->errstr;
+$txt{image} = Imager->new(xsize    => $txt{w},
+			 ysize    => $txt{h}, 
+			 channels => 4) or die Imager->errstr;
 
 # Annotate text
-Imager::Font::Wrap->wrap_text(string => $text,
-			      font   => $font,
-			      image  => $canvas_text,
-                              #width  => $src->getwidth() - $pad_x,
-			      width  => $w - $pad_x,
-			      justify => JUSTIFY,
-			      x      => $cx,
-			      y      => $cy,
-			      aa     => 1) or die Imager->errstr;
+Imager::Font::Wrap->wrap_text(string  => $opts{text},
+			      font    => $txt{font},
+			      image   => $txt{image},
+                              #width  => $img_src->getwidth() - $pad_x,
+			      width   => $dst{w} - $pad_x,
+			      justify => $opts{justify},
+			      x       => $cx,
+			      y       => $cy,
+			      aa      => 1) or die Imager->errstr;
 
 # Blur
-$canvas_text->filter(type => 'gaussian',
-		     stddev => BLUR_DEV) or die $canvas_text->errstr;
-$canvas_text->filter(type => 'contrast',
-		     intensity => INTENSITY) or die $canvas_text->errstr;
+$txt{image}->filter(type      => 'gaussian',
+		   stddev    => $opts{text_bg_blur}) or die $txt{image}->errstr;
+
+$txt{image}->filter(type      => 'contrast',
+		   intensity => $opts{text_bg_contrast}) or die $txt{image}->errstr;
 
 # Re-annotate 
-undef $font_color;
-$font_color = Imager::Color->new(@text_fg_color);
-$font->{color} = $font_color;
-Imager::Font::Wrap->wrap_text(string => $text,
-			      font   => $font,
-			      image  => $canvas_text,
-                              #width  => $src->getwidth() - $pad_x,
-			      width  => $w - $pad_x,
-			      justify => JUSTIFY,
-			      x      => $cx,
-			      y      => $cy,
-			      aa     => 1) or die Imager->errstr;
+undef $txt{color};
+# Change font color to foreground
+$txt{color} = Imager::Color->new(@text_color_fg);
+$txt{font}->{color} = $txt{color};
+Imager::Font::Wrap->wrap_text(string  => $opts{text},
+			      font    => $txt{font},
+			      image   => $txt{image},
+                              #width  => $img_src->getwidth() - $pad_x,
+			      width   => $dst{w} - $pad_x,
+			      justify => $opts{justify},
+			      x       => $cx,
+			      y       => $cy,
+			      aa      => 1) or die Imager->errstr;
 
 # Paste (blending alpha channel via rubthrough) text on to main canvas.
-# It would be nice if some alignment options were available here:
-# top/bottom, for instance.
-$offs_x = (.5 * $w) - (.5 * $fw); # Center
-#$offs_y = 0; # Top
-$offs_y = $h - $fh; # Bottom
-$canvas_base->rubthrough(src => $canvas_text,
-			 tx => $offs_x,
-			 ty => $offs_y) or die Imager->errstr;
+$offs_x = (.5 * $dst{w}) - (.5 * $txt{w}); # Center
+
+if(lc $opts{valign} eq 'top') {
+	$offs_y = 0;
+}elsif(lc $opts{valign} eq 'center'){
+	$offs_y = (.5 * $dst{h}) - (.5 * $txt{h});
+}elsif(lc $opts{valign} eq 'bottom'){
+	$offs_y = $dst{h} - $txt{h};
+}else{
+	die "Invalid valign format. Options are left, center, right.\n";
+}
+
+$dst{image}->rubthrough(src => $txt{image},
+		       tx  => $offs_x,
+		       ty  => $offs_y) or die Imager->errstr;
 
 
-$canvas_base->write(file => "out.png") or die $canvas_base->errstr;
+$dst{image}->write(file => $dst{file}) or die $dst{image}->errstr;
