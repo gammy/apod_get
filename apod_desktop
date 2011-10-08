@@ -43,7 +43,6 @@ fi
 
 if [ ! -e ${path_new} ]; then
 	mkdir -p ${path_new}
-	echo "HELLO"
 fi
 
 cd ${path_new}
