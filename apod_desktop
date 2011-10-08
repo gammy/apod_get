@@ -17,7 +17,6 @@ font=/usr/share/fonts/TTF/LiberationSans-Regular.ttf
 trap boom ERR
 
 set_background() {
-	echo $1
 	# Appropriate for gnome
 	#gconftool-2 -t str -s /desktop/gnome/background/picture_filename $1 
 
@@ -45,17 +44,23 @@ fi
 cd ${path_new}
 rm ${path_new}/*
 
+echo "Getting the APOD.."
 apod_get
+
+echo "Archiving.."
+cp ${path_new}/* ${path_storage}/
 
 file_txt=$(find      -iname "*.txt" | tail -n1)
 file_img=$(find -not -iname "*.txt" | tail -n1)
 
+echo "Annotating.."
 linnea_annotate --desktop-size \
 		--text-file=${file_txt} \
 		--font-file=${font} \
                 ${file_img} \
 		${file_out}
 
+echo "Setting background.."
 set_background ${file_out}
 
 echo Done!
