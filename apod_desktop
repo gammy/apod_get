@@ -12,17 +12,17 @@
 path_storage=~/.APOD
 path_new=${path_storage}/new
 file_out=${path_storage}/annotated.png
-font=/usr/share/fonts/TTF/LiberationSans-Regular.ttf
+font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf
 
 trap boom ERR
 
 set_background() {
 	# Appropriate for gnome
-	#gconftool-2 -t str -s /desktop/gnome/background/picture_filename $1 
+	gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
 
 	# Appropriate for pekwm, etc
 	#hsetroot -center "$1"
-	feh --bg-center "$1"
+	#feh --bg-center "$1"
 
 	return;
 }
@@ -38,29 +38,34 @@ if [ ! -e ${font} ]; then
 fi
 
 if [ ! -e ${path_storage} ]; then
-	mkdir -p ${path_storage} ${path_new}
+	mkdir -p ${path_storage} 
+fi
+
+if [ ! -e ${path_new} ]; then
+	mkdir -p ${path_new}
+	echo "HELLO"
 fi
 
 cd ${path_new}
-rm ${path_new}/*
+rm -f ${path_new}/*
 
 echo "Getting the APOD.."
 apod_get
 
 echo "Archiving.."
-cp ${path_new}/* ${path_storage}/
+cp -f ${path_new}/* ${path_storage}/
 
 file_txt=$(find      -iname "*.txt" | tail -n1)
 file_img=$(find -not -iname "*.txt" | tail -n1)
 
 echo "Annotating.."
 linnea_annotate --desktop-size \
-		--text-file=${file_txt} \
-		--font-file=${font} \
-                ${file_img} \
-		${file_out}
+		--text-file="${file_txt}" \
+		--font-file="${font}" \
+                "${file_img}" \
+		"${file_out}"
 
 echo "Setting background.."
-set_background ${file_out}
+set_background "${file_out}"
 
 echo Done!
