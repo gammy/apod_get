@@ -1,15 +1,31 @@
 #!/bin/bash
+# Download the APOD, annotate it and set it as background.
+#
+# This script isn't as 'smart' as apod_get itself and will
+# always download the APOD regardless of if you already
+# have it or not (since it clears the new/ directory
+# each time.
+# It also assumes apod_get and linnea_annotate are 
+# globally installed (available in $PATH)
+# by gammy
 
 path_storage=~/.APOD
 path_new=${path_storage}/new
 file_out=${path_storage}/annotated.png
+font=/usr/share/fonts/TTF/LiberationSans-Regular.ttf
 
-trap boom INT TERM
+trap boom ERR
 
 set_background() {
-	return;
+	echo $1
 	# Appropriate for gnome
-	# Appropriate for pekwm
+	#gconftool-2 -t str -s /desktop/gnome/background/picture_filename $1 
+
+	# Appropriate for pekwm, etc
+	#hsetroot -center "$1"
+	feh --bg-center "$1"
+
+	return;
 }
 
 boom() {
@@ -17,9 +33,13 @@ boom() {
 	exit 1
 }
 
+if [ ! -e ${font} ]; then
+	echo "Can't find \"${font}\""
+	exit 1
+fi
+
 if [ ! -e ${path_storage} ]; then
-	mkdir -p ${path_storage} || echo "Can't create \"${path_storage}\""
-	mkdir -p ${path_new} || echo "Can't create \"${path_new}\""
+	mkdir -p ${path_storage} ${path_new}
 fi
 
 cd ${path_new}
@@ -30,10 +50,12 @@ apod_get
 file_txt=$(find      -iname "*.txt" | tail -n1)
 file_img=$(find -not -iname "*.txt" | tail -n1)
 
-linnea_annotate --text-file=${file_txt}\
-                ${file_img}\
+linnea_annotate --desktop-size \
+		--text-file=${file_txt} \
+		--font-file=${font} \
+                ${file_img} \
 		${file_out}
 
-set_background
+set_background ${file_out}
 
-echo All done!
+echo Done!

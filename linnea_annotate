@@ -17,13 +17,13 @@ use Imager::Fill;
 use Imager::Font::Wrap;
 use Data::Dumper;
 
-my %opts = (
+my %defaults = (
 	"text_bg"          => '0a0a10',
 	"text_fg"          => 'ffffff',
 	"text"             => '',
 	"text_file"        => '',
 	"font_pts"         => 14,
-	"font_file"        => './font/Istok-Regular.ttf',
+	"font_file"        => '/font/Istok-Regular.ttf',
 	"screen"           => 0,
 	"size"             => '0x0',
 	"desktop-size"     => 0,
@@ -34,6 +34,8 @@ my %opts = (
 	"halign"           => 'center', # left center right # TODO
 	"justify"          => 'fill',   # left center right fill
 );
+
+my %opts = %defaults;
 
 sub help {
 
@@ -55,18 +57,18 @@ sub help {
   --justify           text justification method  (default '%s')
 ", 
 	$0,
-	$opts{text_bg},
-	$opts{text_fg},
-	$opts{text},
-	$opts{text_file},
-	$opts{font_pts},
-	$opts{font_file},
-	$opts{screen},
-	$opts{text_bg_blur},
-	$opts{text_bg_contrast},
-	$opts{valign},
-	$opts{halign},
-	$opts{justify});
+	$defaults{text_bg},
+	$defaults{text_fg},
+	$defaults{text},
+	$defaults{text_file},
+	$defaults{font_pts},
+	$defaults{font_file},
+	$defaults{screen},
+	$defaults{text_bg_blur},
+	$defaults{text_bg_contrast},
+	$defaults{valign},
+	$defaults{halign},
+	$defaults{justify});
 
 }
 
