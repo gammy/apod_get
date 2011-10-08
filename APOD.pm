@@ -70,7 +70,7 @@ sub destination {
 		$self->{destination} = shift;
 	} else {
 		if(! $self->{destination}) {
-			$self->{destination} = './';
+			$self->{destination} = '.';
 		}
 	}
 

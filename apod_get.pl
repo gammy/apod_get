@@ -10,13 +10,7 @@
 use warnings;
 use strict;
 
-use constant DST_PATH  => $ENV{HOME} . '/.APOD';
-
 use APOD;
-
-if(! -e DST_PATH) {
-	mkdir DST_PATH, 0744 or die $!;
-}
 
 my $apod = new APOD;
 
@@ -27,9 +21,6 @@ die "It doesn't seem like we could parse the page" if ! $apod->description;
 
 # No image? - just die.
 die "No image found (perhaps it's a video today).\n" if ! $apod->url;
-
-# Set destination path
-$apod->destination(DST_PATH);
 
 my $img_path = $apod->destination . '/' . $apod->filename;
 my $dsc_path = "$img_path.txt";
