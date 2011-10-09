@@ -61,6 +61,8 @@ echo "Annotating.."
 linnea_annotate --desktop-size \
 		--text-file="${file_txt}" \
 		--font-file="${font}" \
+		--font-pts=12 \
+		--valign=bottom \
                 "${file_img}" \
 		"${file_out}"
 
