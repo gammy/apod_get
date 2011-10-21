@@ -207,9 +207,21 @@ $dst{image} = Imager->new(xsize    => $dst{w},
                           ysize    => $dst{h},
                           channels => 4) or die Imager->errstr;
 
-# Scale it to fit height if necessary
+# Scale to fit
 if($src{h} > $dst{h}) {
-	my $tmp = $src{image}->scale(ypixels => $dst{h}) or die Imager->errstr;
+
+	my ($scalex, $scaley) = ($dst{w} / $src{w},
+				 $dst{h} / $src{h});
+
+	my $scale;
+
+	if($src{w} > $src{h}) { # width is major
+		$scale = $scalex;
+	} else {                # height is major
+		$scale = $scaley;
+	}
+
+	my $tmp = $src{image}->scale(scalefactor => $scale) or die Imager->errstr;
 	$src{image} = $tmp;
 
 	($src{w}, $src{h}) = ($src{image}->getwidth(), $src{image}->getheight());
@@ -232,8 +244,8 @@ my $offs_x = (.5 * $dst{w}) - (.5 * $src{w});
 my $offs_y = (.5 * $dst{h}) - (.5 * $src{h});
 
 $dst{image}->paste(left => $offs_x,
-		  top  => $offs_y,
-		  src  => $src{image}) or die $dst{image}->errstr;
+                   top  => $offs_y,
+                   src  => $src{image}) or die $dst{image}->errstr;
 
 $txt{color} = Imager::Color->new(@text_color_bg);
 $txt{font} = Imager::Font->new(file  => $opts{font_file},
