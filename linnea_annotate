@@ -25,7 +25,7 @@ my %defaults = (
 	"font_pts"         => 14,
 	"font_file"        => '/font/Istok-Regular.ttf',
 	"screen"           => 0,
-	"size"             => '0x0',
+	"size"             => '',
 	"desktop-size"     => 0,
 	"text_bg_blur"     => 4.0,
 	"text_bg_contrast" => 9.0,
@@ -185,6 +185,7 @@ if($opts{text_file} ne '') {
 
 if($opts{desktop_size}) {
 	($dst{w}, $dst{h}) = resolution_get($opts{screen});
+	$opts{size} = $dst{w} . 'x' . $dst{h};
 }
 
 ##############################################################################
@@ -196,15 +197,15 @@ $src{image} = Imager->new(file     => $src{file},
 ($src{w}, $src{h}) = ($src{image}->getwidth(), 
 		      $src{image}->getheight());
 
-# Set size of dst to src 
-if(! $opts{desktop_size}) {
+# Set size of dst to src if no size option is set
+if(! $opts{size}) {
 	($dst{w}, $dst{h}) = ($src{w}, $src{h});
 }
 
 # Create empty destination canvas
 $dst{image} = Imager->new(xsize    => $dst{w},
-			 ysize    => $dst{h},
-			 channels => 4) or die Imager->errstr;
+                          ysize    => $dst{h},
+                          channels => 4) or die Imager->errstr;
 
 # Scale it to fit height if necessary
 if($src{h} > $dst{h}) {
