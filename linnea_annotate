@@ -112,6 +112,7 @@ sub resolution_get {
 
 	return($w, $h);
 }
+
 ##############################################################################
 
 my $result = GetOptions ("text-bg=s"          => \$opts{text_bg},
@@ -208,24 +209,24 @@ $dst{image} = Imager->new(xsize    => $dst{w},
                           channels => 4) or die Imager->errstr;
 
 # Scale to fit
-if($src{h} > $dst{h}) {
+($src{aspect}, $dst{aspect}) = ($src{w} / $src{h},
+                                $dst{w} / $dst{h});
 
-	my ($scalex, $scaley) = ($dst{w} / $src{w},
-				 $dst{h} / $src{h});
-
-	my $scale;
-
-	if($src{w} > $src{h}) { # width is major
-		$scale = $scalex;
-	} else {                # height is major
-		$scale = $scaley;
-	}
-
-	my $tmp = $src{image}->scale(scalefactor => $scale) or die Imager->errstr;
-	$src{image} = $tmp;
-
-	($src{w}, $src{h}) = ($src{image}->getwidth(), $src{image}->getheight());
+if($src{aspect} >= $dst{aspect} && $src{w} > $dst{w}) {
+	$src{w} = $dst{w};
+        $src{h} = $dst{w} / $src{aspect};
 }
+
+if($src{aspect} < $dst{aspect} && $src{h} > $dst{h}) {
+	$src{w} = $src{aspect} * $dst{h});
+        $src{h} = $dst{h};
+}
+
+my $tmp = $src{image}->scale(xpixels => $src{w}, 
+	                     ypixels => $src{h}) or die Imager->errstr;
+$src{image} = $tmp;
+($src{w}, $src{h}) = ($src{image}->getwidth(), $src{image}->getheight());
+#############################################################################
 
 # Set background color if there's a visible canvas
 if($src{w} < $dst{w} || $src{h} < $dst{h}) {
@@ -236,7 +237,6 @@ if($src{w} < $dst{w} || $src{h} < $dst{h}) {
 
 	}
 }
-
 
 # Paste scaled image to center of canvas
 # TODO take $opts{halign} into account
