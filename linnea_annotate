@@ -218,7 +218,7 @@ if($src{aspect} >= $dst{aspect} && $src{w} > $dst{w}) {
 }
 
 if($src{aspect} < $dst{aspect} && $src{h} > $dst{h}) {
-	$src{w} = $src{aspect} * $dst{h});
+	$src{w} = $src{aspect} * $dst{h};
         $src{h} = $dst{h};
 }
 
