@@ -46,7 +46,8 @@ use strict;
 
 package APOD;
 
-use base qw/HTML::Parser/;
+#use base qw/HTML::Parser/;
+require HTML::Parser;
 
 use constant BASE_URL     => 'http://apod.nasa.gov';
 
@@ -58,6 +59,7 @@ my $text_buf;
 my $path_found = 0;
 
 # Getters
+sub page_url    { return $_[0]->{page_url}; }
 sub url         { return $_[0]->{url}; }
 sub image       { return $_[0]->{image}; }
 sub filename    { return $_[0]->{filename}; }
@@ -76,6 +78,25 @@ sub destination {
 
 	return $self->{destination};
 };
+
+sub new {
+	my $class = shift;
+	my $self = {name => $class};
+
+	bless($self, $class);
+
+	print "->$self<-\n";
+
+	if(@_) {
+		$self->{page_url} = shift;
+	} else {
+		$self->{page_url} = "test";
+	}
+
+	HTML::Parser::new();
+
+	return $self;
+}
 
 # Get the APOD webpage and find image url & description. 
 # Always call this first.

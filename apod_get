@@ -12,7 +12,7 @@ use strict;
 
 use APOD;
 
-my $apod = new APOD;
+my $apod = new APOD();
 
 $apod->peek() or die "$!";
 
