@@ -46,8 +46,7 @@ use strict;
 
 package APOD;
 
-#use base qw/HTML::Parser/;
-require HTML::Parser;
+use base qw/HTML::Parser/;
 
 use constant BASE_URL     => 'http://apod.nasa.gov';
 
@@ -79,30 +78,21 @@ sub destination {
 	return $self->{destination};
 };
 
-sub new {
-	my $class = shift;
-	my $self = {name => $class};
-
-	bless($self, $class);
-
-	print "->$self<-\n";
+# Get the APOD webpage and find image url & description. 
+# Always call this first.
+# Takes optional page URL as argument.
+sub peek {
+	my $self = shift;
 
 	if(@_) {
 		$self->{page_url} = shift;
 	} else {
-		$self->{page_url} = "test";
+		$self->{page_url} = BASE_URL;
 	}
 
-	HTML::Parser::new();
+	my $html = get($self->{page_url}) or 
+		croak "Failed to get \"" . $self->{page_url} . "\"";
 
-	return $self;
-}
-
-# Get the APOD webpage and find image url & description. 
-# Always call this first.
-sub peek {
-	my $self = shift;
-	my $html = get(BASE_URL) or croak "Failed to get \"" . BASE_URL . "\"";
 	$self->parse($html);
 }
 
