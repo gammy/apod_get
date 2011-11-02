@@ -1,0 +1,62 @@
+#!/usr/bin/env perl
+# 
+# Get full-size APOD as well as description for each
+# item in the APOD rss feed.
+#
+# by gammy.
+
+use warnings;
+use strict;
+
+use APOD;
+use LWP::Simple;
+use XML::RSS::Parser;
+
+use constant FEED_URL => "http://apod.nasa.gov/apod.rss";
+
+my $xml = get(FEED_URL) or die 'Failed to get "' . FEED_URL . '"';
+
+my $parser = new XML::RSS::Parser;
+my $feed = $parser->parse_string($xml);
+
+print $feed->item_count . " items.\n";
+
+my $apod = new APOD();
+
+for my $item ($feed->query('//item')) {
+
+	my $title = $item->query('title')->text_content;
+	my $link = $item->query('link')->text_content;
+
+	$| = 1;
+
+	print "\"$title\": ";
+
+	$apod->peek($link);
+
+	$| = 0;
+
+	if(! $apod->description) {
+		print "It doesn't seem like we could parse the page.\n";
+		next;
+	}
+
+	if(! $apod->url) {
+		print "No image found (perhaps it's a video today).\n";
+		next;
+	}
+
+	my $img_path = $apod->destination . '/' . $apod->filename;
+	my $dsc_path = "$img_path.txt";
+
+	if(-e $img_path) {
+		print "Already got \"$img_path\".\n";
+		next;
+	}
+
+	$apod->save_image();
+	$apod->save_description();
+
+	print "Ok.\n";
+}
+

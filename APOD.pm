@@ -19,7 +19,7 @@ use strict;
   
  # Peek at the APOD website to fill in the image url, description, etc.
  # Always call this method first.
- $apod->peek();
+ $apod->peek(); # takes any APOD page url as optional argument
 
  $apod->destination("/tmp/");
 
@@ -80,9 +80,15 @@ sub destination {
 
 # Get the APOD webpage and find image url & description. 
 # Always call this first.
-# Takes optional page URL as argument.
+# Takes optional page URL as argument
 sub peek {
 	my $self = shift;
+
+	$self->{description} = undef;
+	$self->{url}         = undef;
+	$self->{image}       = undef;
+	$self->{filename}    = undef;
+	$path_found          = 0;
 
 	if(@_) {
 		$self->{page_url} = shift;
@@ -155,9 +161,11 @@ sub start {
 		$text_buf = '';
 	}elsif($tagname eq 'a') {
 		if($attr->{href}=~m#(image/.*)#s) {
-			$self->{url}        = BASE_URL . '/' . $1 if ! $path_found;
-			$self->{filename}   = substr($self->{url}, 
-			                             rindex($self->{url}, '/') + 1);
+			if (! $path_found) {
+				$self->{url}      = BASE_URL . '/' . $1;
+				$self->{filename} = substr($self->{url}, 
+						           rindex($self->{url}, '/') + 1);
+			}
 			$path_found = 1;
 		}
 	}
