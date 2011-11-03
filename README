@@ -20,7 +20,7 @@ apod_desktop:
 	specific directory(~/.APOD/new/) and then annotates the APOD
 	description to the image (into ~/.APOD/) via linnea_annotate.
 	It then sets the background via any method set in
-	background_set() (see the script itself to change it)
+	background_set() (see the script itself to change it).
 
 linnea_annotate:
 	Although this turned out as a part of the APOD code, it's now
@@ -32,6 +32,9 @@ linnea_annotate:
 	It can do some helping stuff, like automatically create an output
 	image which is the same size as the current desktop.
 
+font/:
+	A free truetype font.
+
 NOTES:
 
 Most of this stuff assumes that the files are globally installed, meaning
@@ -39,3 +42,15 @@ that APOD.pm needs to go into your perl module path.
 
 For apod_desktop to run, apod_desktop and linnea_annotate need to be
 globally installed (in, say, /usr/local/bin/ or the like).
+
+Running apod_desktop, or linnea_annotate with --desktop-size, from a cronjob
+or screen will probably fail:
+
+The --desktop-size option of linnea_annotate (which is used by apod_desktop) 
+won't work if you're not running from an other user of if your DISPLAY
+environment variable isn't set. You can get around this by using --size
+to set the desired output resolution.
+
+The program which is to set your background image(called by set_background
+at the top of apod_desktop) will probably have the same requirements.
+One workaround is to write your custom desktop script.
