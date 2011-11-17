@@ -16,17 +16,6 @@ font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf
 
 trap boom ERR
 
-set_background() {
-	# Appropriate for gnome
-	gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
-
-	# Appropriate for pekwm, etc
-	#hsetroot -center "$1"
-	#feh --bg-center "$1"
-
-	return;
-}
-
 boom() {
 	echo "Fatal error."
 	exit 1
@@ -57,16 +46,4 @@ cp -f ${path_new}/* ${path_storage}/
 file_txt=$(find      -iname "*.txt" | tail -n1)
 file_img=$(find -not -iname "*.txt" | tail -n1)
 
-echo "Annotating.."
-linnea_annotate --desktop-size \
-		--text-file="${file_txt}" \
-		--font-file="${font}" \
-		--font-pts=12 \
-		--valign=bottom \
-                "${file_img}" \
-		"${file_out}"
-
-echo "Setting background.."
-set_background "${file_out}"
-
-echo Done!
+apod_setbg -t ${file_txt} -i ${file_img}

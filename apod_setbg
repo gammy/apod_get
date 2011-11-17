@@ -1,0 +1,83 @@
+#!/bin/bash
+
+path_storage=~/.APOD
+path_new=${path_storage}/new
+file_out=${path_storage}/annotated.png
+font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf
+
+trap boom ERR
+
+set_background() {
+	# Appropriate for gnome
+	gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
+
+	# Appropriate for pekwm, etc
+	#hsetroot -center "$1"
+	#feh --bg-center "$1"
+
+	return;
+}
+
+boom() {
+	echo "Fatal error."
+	exit 1
+}
+
+usage() {
+	     echo "Usage: $(basename $0) [-t <text-file>] -i <image>"
+	     echo "-t foo.txt        Annotate image with foo.txt"
+	     echo "-i foo.png        Image to set as background"
+	     echo
+}
+
+file_txt=
+file_img=
+
+while getopts “ht:i:” opt; do
+     case $opt in
+         t)
+             file_txt=$OPTARG
+             ;;
+	 i)
+	     file_img=$OPTARG
+	     ;;
+         h)
+	     usage
+             exit
+             ;;
+         ?)
+             usage
+             exit
+             ;;
+     esac
+done
+
+if [[ -z $file_img ]]; then
+	usage
+	exit
+fi
+
+opt_text=
+if [[ ! -z $file_txt ]]; then
+	opt_text="--text-file=${file_txt}"
+fi
+
+opt_size=
+if [[ -z $size ]]; then
+	opt_size="--desktop-size"
+else
+	opt_text="--text-file=${file_txt}"
+fi
+
+linnea_annotate ${opt_size} \
+		${opt_text} \
+		--font-file="${font}" \
+		--font-pts=12 \
+		--valign=bottom \
+                "${file_img}" \
+		"${file_out}"
+
+echo "Setting background.."
+set_background "${file_out}"
+
+echo Done!

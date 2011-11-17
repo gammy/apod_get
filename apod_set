@@ -1,0 +1,61 @@
+#!/bin/bash
+# Annotate and set as background.
+#
+# assumes apod_get and linnea_annotate is 
+# globally installed (available in $PATH)
+# by gammy
+
+path_storage=~/.APOD
+path_new=${path_storage}/new
+file_out=${path_storage}/annotated.png
+font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf
+
+trap boom ERR
+
+set_background() {
+	# Appropriate for gnome
+	gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
+
+	# Appropriate for pekwm, etc
+	#hsetroot -center "$1"
+	#feh --bg-center "$1"
+
+	return;
+}
+
+boom() {
+	echo "Fatal error."
+	exit 1
+}
+
+if [ ! -e ${font} ]; then
+	echo "Can't find \"${font}\""
+	exit 1
+fi
+
+if [ ! -e ${path_storage} ]; then
+	mkdir -p ${path_storage} 
+fi
+
+if [ ! -e ${path_new} ]; then
+	mkdir -p ${path_new}
+fi
+
+cd ${path_new}
+
+file_txt=$2
+file_img=$1
+
+echo "Annotating.."
+linnea_annotate --desktop-size \
+		--text-file="${file_txt}" \
+		--font-file="${font}" \
+		--font-pts=12 \
+		--valign=bottom \
+                "${file_img}" \
+		"${file_out}"
+
+echo "Setting background.."
+set_background "${file_out}"
+
+echo Done!
