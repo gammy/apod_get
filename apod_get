@@ -31,7 +31,6 @@ die "No image found (perhaps it's a video today).\n" if ! $apod->url;
 my $img_path = $apod->destination . '/' . $apod->filename;
 my $dsc_path = "$img_path.txt";
 
-print "checking $img_path\n";
 die "Already got \"$img_path\".\n" if -e $img_path;
 
 $apod->save_image();

@@ -23,7 +23,7 @@ boom() {
 }
 
 usage() {
-	     echo "Usage: $(basename $0) [-t <text-file>] [-s <WxH>] -i <input image> -o <output image>"
+	     echo "Usage: $(basename $0) [-t <text-file>] [-s <WxH>] <input image> <output image>"
 	     echo "-t foo.txt        Annotate image with content of 'foo.txt'"
 	     echo "-i in.png         Input file : Use 'foo.png' as background"
 	     echo "-o out.png        Output file: Output result to 'foo.png'"
@@ -36,17 +36,17 @@ file_src=
 file_dst=
 opt_size="--desktop-size"
 
+echo "hey"
+
 while getopts “ht:i:o:s:” opt; do
+echo "loop"
      case $opt in
+	 *)
+	     echo "lol $OPTARG"
+	     ;;
          t)
 	     opt_text="--text-file=${OPTARG}"
              ;;
-	 i)
-	     file_src=$OPTARG
-	     ;;
-	 o)
-	     file_dst=$OPTARG
-	     ;;
 	 s)
 	     opt_size="--size=$OPTARG"
 	     ;;
@@ -61,12 +61,23 @@ while getopts “ht:i:o:s:” opt; do
      esac
 done
 
-if [[ -z ${file_src} ]] || [[ -z ${file_dst} ]]; then
-	usage
-	exit
-fi
+#	 i)
+#	     file_src=$OPTARG
+#	     ;;
+#	 o)
+#	     file_dst=$OPTARG
+#	     ;;
 
-linnea_annotate ${opt_size} \
+echo $OPTARG
+shift $(($OPTIND - 1))
+echo $OPTARG
+
+#if [[ -z ${file_src} ]] || [[ -z ${file_dst} ]]; then
+#	usage
+#	exit
+#fi
+
+echo linnea_annotate ${opt_size} \
 		${opt_text} \
 		--font-file="${font}" \
 		--font-pts=12 \
@@ -74,4 +85,4 @@ linnea_annotate ${opt_size} \
                 "${file_src}" \
 		"${file_dst}"
 
-set_background "${file_dst}"
+#set_background "${file_dst}"
