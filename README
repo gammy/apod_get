@@ -13,7 +13,7 @@ apod_get:
 	~/.APOD/ and keeps the latest files symlinked to ~/.APOD/latest/.
 
 apod_getrss:
-	A perl script which saves the image and description files for each APOD
+	A Perl script which saves the image and description files for each APOD
 	provided by NASAs APOD RSS feed into the current directory. Note that
 	this doesn't have an archive mode like apod_get.
 
@@ -22,28 +22,29 @@ apod_setbg:
 	size, by using linnea_annotate) and optionally annotated image which it 
 	then sets as the desktop background.
 
+apod_archive_setbg:
+	Literally two lines of code: runs apod_get --archive and apod_setbg.
+	It takes an APOD URL as an optinal argument.
+
 linnea_annotate:
-	A text annotator written in Perl. It takes an input image and text,
-	annotates the text onto it and produces an output image. It can do some
-       	helping stuff, like automatically create an output image which is the 
-	same size as the current desktop. Although this turned out as a part of 
-	the APOD code, it's now a standalone program which might be practical
-	outside of this context.
+	A text annotator written in Perl; it produces a scaled and annotated 
+	copy of a supplied image. Although this turned out as a part of the 
+	APOD code, it's now a generally useful standalone program for creating
+	captioned images.
 
 font/:
 	A free truetype font.
 
 NOTES:
 
-For the scripts to run, the perl module and scripts need to be accessible via
+For the scripts to run, the Perl module and scripts need to be accessible via
 @INC and $PATH (ie, they need to be globally installed or run from the same
 directory as the files are in)	       
 
-linnea_annotate (used by apod_setbg) can't determine the desktop size
-(the '--desktop-size' option) if it's run from an other user, etc, since it
-needs all your environment variables. If you want to run apod_setbg from say a
-crontab, I suggest you just edit the script to set a static size using the
-'--size' option.
+linnea_annotate (used by apod_setbg) can't automatically determine the desktop
+size (the '--desktop-size' option) if it's run from an other user since it needs
+all your environment variables and such to do it. Use the '-s'-option for 
+apod_setbg to set the desktop dimension manually.
 
-You can modify how the background is to be set by looking at the 
-"background_set" subroutine at the top of apod_setbg.
+You can modify how the background is to be set by changing the "background_set" 
+subroutine at the top of apod_setbg.
