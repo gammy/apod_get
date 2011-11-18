@@ -155,8 +155,8 @@ sub start {
 			$text_buf =~s/^ //g;
 			$text_buf =~s/ $//g;
 			$text_buf =~s/^Explanation: //;
-			$self->{description} = $text_buf;
-		
+			$self->{description} = $text_buf . 
+			                       " ($_[0]->{page_url})";
 		}
 		$text_buf = '';
 	}elsif($tagname eq 'a') {
