@@ -7,51 +7,43 @@ APOD.pm:
 	well as its description.
 
 apod_get:
-	A Perl script which, by using APOD.pm, saves the image and 
-	description file in the current directory.
+	A Perl script which saves the image and description file either of
+	todays APOD, or the APOD specified by an optional URL argument. 
+	It also has an archiving mode, which stores the files in
+	~/.APOD/ and keeps the latest files symlinked to ~/.APOD/latest/.
 
 apod_getrss:
-	Does what apod_get does, but for each entry in the APOD RSS, 
-	which usually contains a weeks worth of APODs.
-
-apod_archive:
-	A bash script wich uses apod_get to download an APOD which it then 
-	archives. The archive is in ~/.APOD/ and the newest image and text 
-	file are always in ~/.APOD/new/.
+	A perl script which saves the image and description files for each APOD
+	provided by NASAs APOD RSS feed into the current directory. Note that
+	this doesn't have an archive mode like apod_get.
 
 apod_setbg:
 	A bash script which generates a resized (to your desktop or a custom 
-	size) and optionally annotated image which it then sets as the desktop
-       	background.
+	size, by using linnea_annotate) and optionally annotated image which it 
+	then sets as the desktop background.
 
 linnea_annotate:
-	Although this turned out as a part of the APOD code, it's now
-	completely unrelated and should probably be moved to its own
-	repository.
-
-	It's a basic text annotator. It takes an input image and text,
-	annotates the text onto it and produces an output image.
-	It can do some helping stuff, like automatically create an output
-	image which is the same size as the current desktop.
+	A text annotator written in Perl. It takes an input image and text,
+	annotates the text onto it and produces an output image. It can do some
+       	helping stuff, like automatically create an output image which is the 
+	same size as the current desktop. Although this turned out as a part of 
+	the APOD code, it's now a standalone program which might be practical
+	outside of this context.
 
 font/:
 	A free truetype font.
 
 NOTES:
 
-Most of this stuff assumes that the files are globally installed, meaning
-that APOD.pm needs to go into your perl module path.
+For the scripts to run, the perl module and scripts need to be accessible via
+@INC and $PATH (ie, they need to be globally installed or run from the same
+directory as the files are in)	       
 
-For apod_desktop to run, apod_desktop and linnea_annotate need to be
-globally installed (in, say, /usr/local/bin/ or the like).
+linnea_annotate (used by apod_setbg) can't determine the desktop size
+(the '--desktop-size' option) if it's run from an other user, etc, since it
+needs all your environment variables. If you want to run apod_setbg from say a
+crontab, I suggest you just edit the script to set a static size using the
+'--size' option.
 
-Running apod_desktop, or linnea_annotate with --desktop-size, from a cronjob
-or screen will probably fail:
-
-The --desktop-size option of linnea_annotate (which is used by apod_desktop) 
-won't work if it's running from an other user of if your DISPLAY environment 
-variable isn't set. You can get around this by using --size to set the desired 
-resolution instead of trying to autodetect it.
-
-The program which is to set your background image(called by set_background
-at the top of apod_desktop) will probably have the same requirements.
+You can modify how the background is to be set by looking at the 
+"background_set" subroutine at the top of apod_setbg.
