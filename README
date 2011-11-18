@@ -10,7 +10,7 @@ apod_get:
 	A Perl script which, by using APOD.pm, saves the image and 
 	description file in the current directory.
 
-apod_get_rss:
+apod_getrss:
 	Does what apod_get does, but for each entry in the APOD RSS, 
 	which usually contains a weeks worth of APODs.
 
