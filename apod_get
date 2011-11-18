@@ -2,6 +2,8 @@
 # Get full-size APOD as well as description.
 # Should be run at least once per day.
 #
+# Takes an APOD URL as optional argument.
+#
 # It skips the image download if the file already
 # exists locally.
 #
@@ -14,7 +16,11 @@ use APOD;
 
 my $apod = new APOD();
 
-$apod->peek() or die "$!";
+if(@ARGV) {
+	$apod->peek(shift(@ARGV)) or die "$!";
+} else {
+	$apod->peek() or die "$!";
+}
 
 # There should always be a description
 die "It doesn't seem like we could parse the page" if ! $apod->description;
