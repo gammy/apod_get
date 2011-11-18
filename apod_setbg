@@ -62,7 +62,7 @@ if [[ -z ${file_src} ]] || [[ -z ${file_dst} ]]; then
 	exit
 fi
 
-echo linnea_annotate ${opt_size} \
+linnea_annotate ${opt_size} \
 		${opt_text} \
 		--font-file="${font}" \
 		--font-pts=12 \

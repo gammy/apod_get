@@ -1,0 +1,7 @@
+#!/bin/bash
+
+p=~/.APOD/latest
+url=$1
+
+apod_get --archive $url
+apod_setbg -t $p/*.txt -i $p/*.jpg -o $p/../annotated.png
