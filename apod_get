@@ -2,8 +2,6 @@
 # Get full-size APOD as well as description.
 # Should be run at least once per day.
 #
-# Takes an APOD URL as optional argument.
-#
 # It skips the image download if the file already
 # exists locally.
 #
@@ -11,10 +9,60 @@
 
 use warnings;
 use strict;
-
+use Getopt::Long;
+use File::Basename;
 use APOD;
 
+use constant PATH_ARCHIVE        => "$ENV{HOME}/.APOD";
+use constant PATH_ARCHIVE_LATEST => PATH_ARCHIVE . "/latest";
+
+my %defaults = (
+	"archive"     => '',
+	"path"        => '.'
+);
+
+my %opts = %defaults;
+
+sub help {
+	printf("Usage: %s [args] [URL]
+  --path         destination path (default '%s')
+  --archive      Archive mode (overrides --path): 
+                 Stores the APOD to \"%s\" and keeps the 
+		 latest symlinks in \"%s\".
+", 
+	basename($0),
+	$defaults{path},
+	PATH_ARCHIVE,
+	PATH_ARCHIVE_LATEST);
+
+}
+
+##############################################################################
+
+my $result = GetOptions ("archive" => sub {$opts{path} = PATH_ARCHIVE; 
+			                   $opts{archive} = 1;},
+	                 "path=s"  => \$opts{path},
+			 "help"    => sub {help; exit;});
+
+if($opts{archive}) {
+
+	$opts{path} = PATH_ARCHIVE;
+
+	if(! -d $opts{path}) {
+		mkdir $opts{path}, 0755 
+			or die "Can't mkdir \"$opts{path}\": $!";
+	}
+
+	if(! -d PATH_ARCHIVE_LATEST) {
+		mkdir PATH_ARCHIVE_LATEST, 0755
+			or die "Can't mkdir \"" . PATH_ARCHIVE_LATEST . "\": $!";
+	}
+   
+}
+
 my $apod = new APOD();
+
+$apod->destination($opts{path});
 
 if(@ARGV) {
 	$apod->peek(shift(@ARGV)) or die "$!";
@@ -29,7 +77,10 @@ die "It doesn't seem like we could parse the page" if ! $apod->description;
 die "No image found (perhaps it's a video today).\n" if ! $apod->url;
 
 my $img_path = $apod->destination . '/' . $apod->filename;
+my $img_sym  = PATH_ARCHIVE_LATEST . '/' . $apod->filename;
+
 my $dsc_path = "$img_path.txt";
+my $dsc_sym  = PATH_ARCHIVE_LATEST . '/' . $apod->filename . '.txt';
 
 die "Already got \"$img_path\".\n" if -e $img_path;
 
@@ -38,3 +89,34 @@ print "Saved \"$img_path\"\n";
 
 $apod->save_description();
 print "Saved \"$dsc_path\"\n";
+
+# Very paranoid archiving since we want to delete any old symlinks still 
+# around in "latest/", but want to prevent user error from deleting other
+# files by accident.
+#
+# We abort if:
+# - More than 2 files are detected
+# - Any non-symlinks are detected
+
+if($opts{archive}) {
+
+	my $count = 0;
+	my @list = glob(PATH_ARCHIVE_LATEST . '/*');
+
+	if($#list >= 2) {
+		die "Found " . @list . " files in \"" . PATH_ARCHIVE_LATEST . 
+		"\" when only expecting 2! Abort.\n";
+	}
+
+	for my $file (@list) {
+		unless(-l $file) {
+			die "Detected non-symlink in \"" .
+			    PATH_ARCHIVE_LATEST . "\"! Abort.\n";
+		}
+	}
+
+	unlink $_ for @list;
+	
+	symlink($img_path, $img_sym);
+	symlink($dsc_path, $dsc_sym);
+}

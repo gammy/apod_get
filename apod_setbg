@@ -36,30 +36,11 @@ file_src=
 file_dst=
 opt_size="--desktop-size"
 
-echo "hey"
-
-while getopts “ht:i:o:s:” opt; do
-echo "loop"
-     case $opt in
-	 *)
-	     echo "lol $OPTARG"
-	     ;;
-         t)
-	     opt_text="--text-file=${OPTARG}"
-             ;;
-	 s)
-	     opt_size="--size=$OPTARG"
-	     ;;
-         h)
-	     usage
-             exit
-             ;;
-         ?)
-             usage
-             exit
-             ;;
-     esac
-done
+# I won't use getopts because it seems any script using it can be completely
+# ruined by prepending any unnamed argument to ARGV. For instance,
+# ./foo fake -s 100x100
+# will due to having the unnamed 'fake' argument in place effectively make
+# getopt return immediately without parsing the arguments. I n s a n e.
 
 #	 i)
 #	     file_src=$OPTARG
