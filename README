@@ -14,13 +14,15 @@ apod_get_rss:
 	Does what apod_get does, but for each entry in the APOD RSS, 
 	which usually contains a weeks worth of APODs.
 
-apod_desktop:
-	A bash script for setting an annotated version of the APOD image
-	as the desktop background. In essence it runs apod_get in a 
-	specific directory(~/.APOD/new/) and then annotates the APOD
-	description to the image (into ~/.APOD/) via linnea_annotate.
-	It then sets the background via any method set in
-	background_set() (see the script itself to change it).
+apod_archive:
+	A bash script wich uses apod_get to download an APOD which it then 
+	archives. The archive is in ~/.APOD/ and the newest image and text 
+	file are always in ~/.APOD/new/.
+
+apod_setbg:
+	A bash script which generates a resized (to your desktop or a custom 
+	size) and optionally annotated image which it then sets as the desktop
+       	background.
 
 linnea_annotate:
 	Although this turned out as a part of the APOD code, it's now

@@ -1,14 +1,13 @@
 #!/bin/bash
 
-path_storage=~/.APOD
-path_new=${path_storage}/new
-file_out=${path_storage}/annotated.png
+# XXX the plague!
 font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf
 
 trap boom ERR
 
 set_background() {
 	# Appropriate for gnome
+	# Note that gconftool of course needs a full path (not relative)
 	gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
 
 	# Appropriate for pekwm, etc
@@ -24,22 +23,32 @@ boom() {
 }
 
 usage() {
-	     echo "Usage: $(basename $0) [-t <text-file>] -i <image>"
-	     echo "-t foo.txt        Annotate image with foo.txt"
-	     echo "-i foo.png        Image to set as background"
+	     echo "Usage: $(basename $0) [-t <text-file>] [-s <WxH>] -i <input image> -o <output image>"
+	     echo "-t foo.txt        Annotate image with content of 'foo.txt'"
+	     echo "-i in.png         Input file : Use 'foo.png' as background"
+	     echo "-o out.png        Output file: Output result to 'foo.png'"
+	     echo "-s 1024x600       Set result image size to 1024x600"
 	     echo
 }
 
-file_txt=
-file_img=
+opt_text=
+file_src=
+file_dst=
+opt_size="--desktop-size"
 
-while getopts “ht:i:” opt; do
+while getopts “ht:i:o:s:” opt; do
      case $opt in
          t)
-             file_txt=$OPTARG
+	     opt_text="--text-file=${OPTARG}"
              ;;
 	 i)
-	     file_img=$OPTARG
+	     file_src=$OPTARG
+	     ;;
+	 o)
+	     file_dst=$OPTARG
+	     ;;
+	 s)
+	     opt_size="--size=$OPTARG"
 	     ;;
          h)
 	     usage
@@ -52,21 +61,9 @@ while getopts “ht:i:” opt; do
      esac
 done
 
-if [[ -z $file_img ]]; then
+if [[ -z ${file_src} ]] || [[ -z ${file_dst} ]]; then
 	usage
 	exit
-fi
-
-opt_text=
-if [[ ! -z $file_txt ]]; then
-	opt_text="--text-file=${file_txt}"
-fi
-
-opt_size=
-if [[ -z $size ]]; then
-	opt_size="--desktop-size"
-else
-	opt_text="--text-file=${file_txt}"
 fi
 
 linnea_annotate ${opt_size} \
@@ -74,10 +71,7 @@ linnea_annotate ${opt_size} \
 		--font-file="${font}" \
 		--font-pts=12 \
 		--valign=bottom \
-                "${file_img}" \
-		"${file_out}"
+                "${file_src}" \
+		"${file_dst}"
 
-echo "Setting background.."
-set_background "${file_out}"
-
-echo Done!
+set_background "${file_dst}"

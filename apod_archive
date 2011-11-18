@@ -1,17 +1,19 @@
 #!/bin/bash
-# Download the APOD, annotate it and set it as background.
+# Download the APOD and archive it:
 #
-# This script isn't as 'smart' as apod_get itself and will
-# always download the APOD regardless of if you already
-# have it or not (since it clears the new/ directory
-# each time.
-# It also assumes apod_get and linnea_annotate are 
-# globally installed (available in $PATH)
+# - The most recently downloaded APOD and text will reside in ~/.APOD/new/
+# - The files are archived to ~/.APOD/
+# 
+# This isn't as smart as apod_get in that it will always re-download an image.
+# This is because it always erases the content of 'new/' before doing anything
+# else.
+# 
 # by gammy
 
 path_storage=~/.APOD
 path_new=${path_storage}/new
-file_out=${path_storage}/annotated.png
+
+# XXX grrr
 font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf
 
 trap boom ERR
@@ -37,13 +39,10 @@ fi
 cd ${path_new}
 rm -f ${path_new}/*
 
-echo "Getting the APOD.."
+echo "(in $(pwd)) Getting the APOD.."
 apod_get
 
-echo "Archiving.."
 cp -f ${path_new}/* ${path_storage}/
 
-file_txt=$(find      -iname "*.txt" | tail -n1)
-file_img=$(find -not -iname "*.txt" | tail -n1)
-
-apod_setbg -t ${file_txt} -i ${file_img}
+# file_txt=$(find      -iname "*.txt" | tail -n1)
+# file_src=$(find -not -iname "*.txt" | tail -n1)
