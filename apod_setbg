@@ -23,7 +23,7 @@ boom() {
 }
 
 usage() {
-	     echo "Usage: $(basename $0) [-t <text-file>] [-s <WxH>] <input image> <output image>"
+	     echo "Usage: $(basename $0) [-t <text-file>] [-s <WxH>] -i <input image> -o <output image>"
 	     echo "-t foo.txt        Annotate image with content of 'foo.txt'"
 	     echo "-i in.png         Input file : Use 'foo.png' as background"
 	     echo "-o out.png        Output file: Output result to 'foo.png'"
