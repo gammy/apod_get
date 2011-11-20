@@ -48,7 +48,7 @@ all your environment variables and such to do it. Use the '-s'-option for
 apod_setbg to set the desktop dimension manually.
 
 linnea_annotate will also need the path to a font, which is unfortunate as it
-is currently hardcoded into several scripts. Sorry about that ;)
+is currently hardcoded into apod_setbg. Sorry about that ;)
 
 You can modify how the background is to be set by changing the "background_set" 
 subroutine at the top of apod_setbg.
