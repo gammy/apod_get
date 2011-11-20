@@ -9,13 +9,12 @@ APOD.pm:
 apod_get:
 	A Perl script which saves the image and description file either of
 	todays APOD, or the APOD specified by an optional URL argument. 
-	It also has an archiving mode, which stores the files in
-	~/.APOD/ and keeps the latest files symlinked to ~/.APOD/latest/.
+	It also has an archiving mode, which creates a 'latest/'-subdirectory
+       	in the download path which contains symlinks to the downloaded files.
 
 apod_getrss:
 	A Perl script which saves the image and description files for each APOD
-	provided by NASAs APOD RSS feed into the current directory. Note that
-	this doesn't have an archive mode like apod_get.
+	provided by NASAs APOD RSS feed into the current directory.
 
 apod_setbg:
 	A bash script which generates a resized (to your desktop or a custom 
@@ -25,6 +24,8 @@ apod_setbg:
 apod_archive_setbg:
 	Literally two lines of code: runs apod_get --archive and apod_setbg.
 	It takes an APOD URL as an optinal argument.
+	This can be called from a crontab if a size is specified by adding
+	a '--size'-argument to the last line (calling apod_setbg)
 
 linnea_annotate:
 	A text annotator written in Perl; it produces a scaled and annotated 
@@ -45,6 +46,9 @@ linnea_annotate (used by apod_setbg) can't automatically determine the desktop
 size (the '--desktop-size' option) if it's run from an other user since it needs
 all your environment variables and such to do it. Use the '-s'-option for 
 apod_setbg to set the desktop dimension manually.
+
+linnea_annotate will also need the path to a font, which is unfortunate as it
+is currently hardcoded into several scripts. Sorry about that ;)
 
 You can modify how the background is to be set by changing the "background_set" 
 subroutine at the top of apod_setbg.
