@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# XXX the plague!
-font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf
+font=/home/gammy/code/perl/apod_get/font/Istok-Regular.ttf # XXX the plague!
 
 trap boom ERR
 
@@ -59,6 +58,12 @@ done
 
 if [[ -z ${file_src} ]] || [[ -z ${file_dst} ]]; then
 	usage
+	exit
+fi
+
+if [ ! -f ${font} ]; then
+	echo Unable to find \"${font}\": Please edit $0 to specify a working \
+	font path.
 	exit
 fi
 
