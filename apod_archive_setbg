@@ -1,12 +1,11 @@
 #!/bin/bash
+path=~/.APOD  # Hardcode instead of using ~ or $HOME if user is unknown, etc
+latest=$path/latest
 
-# Note that if you want to run this from a crontab, you probably don't want
-# to rely on ~ or $HOME - hardcode the path.
-path=/home/gammy/.APOD
-latest=${path}/latest
-url=$1
+apod_get --archive \
+         --path=$path $1
 
-apod_get --archive --path=$path $url 
-
-apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $path/annotated.png \
-#-s 1024x600 # Remove the comment and set the size (ie if run from crontab)
+apod_setbg -t $latest/*.txt \
+           -i $latest/*.jpg \
+	   -o $path/annotated.png \
+#	   -s 1920x1080 # Hardcode if unable to autodetect
