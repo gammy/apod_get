@@ -4,5 +4,7 @@ path=~/.APOD
 latest=~/.APOD/latest
 url=$1
 
-apod_get --archive --path=$path $url && \
-apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $path/annotated.png
+apod_get --archive --path=$path $url 
+
+# Add the '--size=WxH'-option to hardcode the output resolution.
+apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $path/annotated.png 
