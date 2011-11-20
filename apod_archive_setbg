@@ -1,10 +1,12 @@
 #!/bin/bash
 
-path=~/.APOD
-latest=~/.APOD/latest
+# Note that if you want to run this from a crontab, you probably don't want
+# to rely on ~ or $HOME - hardcode the path.
+path=/home/gammy/.APOD
+latest=${path}/latest
 url=$1
 
 apod_get --archive --path=$path $url 
 
-# Add the '--size=WxH'-option to hardcode the output resolution.
-apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $path/annotated.png 
+apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $path/annotated.png \
+#-s 1024x600 # Remove the comment and set the size (ie if run from crontab)
