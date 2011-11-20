@@ -13,12 +13,12 @@ use Getopt::Long;
 use File::Basename;
 use APOD;
 
-use constant PATH_ARCHIVE        => "$ENV{HOME}/.APOD";
-use constant PATH_ARCHIVE_LATEST => PATH_ARCHIVE . "/latest";
+use constant DIR_SYMLINKS => 'latest';
 
 my %defaults = (
-	"archive"     => '',
-	"path"        => '.'
+	"path"        => '.',
+	"archive"     => ''
+
 );
 
 my %opts = %defaults;
@@ -26,36 +26,33 @@ my %opts = %defaults;
 sub help {
 	printf("Usage: %s [args] [URL]
   --path         destination path (default '%s')
-  --archive      Archive mode (overrides --path): 
-                 Stores the APOD to \"%s\" and keeps the 
-		 latest symlinks in \"%s\".
+  --archive      In addition to normal operation, create symlinks to
+		 the files in \"<path>/%s\".
 ", 
 	basename($0),
 	$defaults{path},
-	PATH_ARCHIVE,
-	PATH_ARCHIVE_LATEST);
+	$defaults{path_syms});
 
 }
 
 ##############################################################################
 
-my $result = GetOptions ("archive" => sub {$opts{path} = PATH_ARCHIVE; 
-			                   $opts{archive} = 1;},
+my $result = GetOptions ("archive" => sub {$opts{archive} = 1;},
 	                 "path=s"  => \$opts{path},
 			 "help"    => sub {help; exit;});
 
-if($opts{archive}) {
+$opts{path_syms} = $opts{path} . '/' . DIR_SYMLINKS;
 
-	$opts{path} = PATH_ARCHIVE;
+if($opts{archive}) {
 
 	if(! -d $opts{path}) {
 		mkdir $opts{path}, 0755 
 			or die "Can't mkdir \"$opts{path}\": $!";
 	}
 
-	if(! -d PATH_ARCHIVE_LATEST) {
-		mkdir PATH_ARCHIVE_LATEST, 0755
-			or die "Can't mkdir \"" . PATH_ARCHIVE_LATEST . "\": $!";
+	if(! -d $opts{path_syms}) {
+		mkdir $opts{path_syms}, 0755
+			or die "Can't mkdir \"" . $opts{path_syms} . "\": $!";
 	}
    
 }
@@ -77,10 +74,10 @@ die "It doesn't seem like we could parse the page" if ! $apod->description;
 die "No image found (perhaps it's a video today).\n" if ! $apod->url;
 
 my $img_path = $apod->destination . '/' . $apod->filename;
-my $img_sym  = PATH_ARCHIVE_LATEST . '/' . $apod->filename;
+my $img_sym  = $opts{path_syms} . '/' . $apod->filename;
 
 my $dsc_path = "$img_path.txt";
-my $dsc_sym  = PATH_ARCHIVE_LATEST . '/' . $apod->filename . '.txt';
+my $dsc_sym  = $opts{path_syms} . '/' . $apod->filename . '.txt';
 
 die "Already got \"$img_path\".\n" if -e $img_path;
 
@@ -101,17 +98,17 @@ print "Saved \"$dsc_path\"\n";
 if($opts{archive}) {
 
 	my $count = 0;
-	my @list = glob(PATH_ARCHIVE_LATEST . '/*');
+	my @list = glob($opts{path_syms} . '/*');
 
 	if($#list >= 2) {
-		die "Found " . @list . " files in \"" . PATH_ARCHIVE_LATEST . 
+		die "Found " . @list . " files in \"" . $opts{path_syms} . 
 		"\" when only expecting 2! Abort.\n";
 	}
 
 	for my $file (@list) {
 		unless(-l $file) {
 			die "Detected non-symlink in \"" .
-			    PATH_ARCHIVE_LATEST . "\"! Abort.\n";
+			    $opts{path_syms} . "\"! Abort.\n";
 		}
 	}
 

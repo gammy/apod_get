@@ -1,7 +1,8 @@
 #!/bin/bash
 
-p=~/.APOD/latest
+path=~/.APOD
+latest=~/.APOD/latest
 url=$1
 
-apod_get --archive $url
-apod_setbg -t $p/*.txt -i $p/*.jpg -o $p/../annotated.png
+apod_get --archive --path=$path $url && \
+apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $latest/../annotated.png
