@@ -5,4 +5,4 @@ latest=~/.APOD/latest
 url=$1
 
 apod_get --archive --path=$path $url && \
-apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $latest/../annotated.png
+apod_setbg -t $latest/*.txt -i $latest/*.jpg -o $path/annotated.png
