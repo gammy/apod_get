@@ -1,6 +1,10 @@
 #!/bin/bash
-path=~/.APOD  # Hardcode instead of using ~ or $HOME if user is unknown, etc
+path=$HOME/.APOD
 latest=$path/latest
+
+if [ ! $DISPLAY ]; then     # DISPLAY isn't set by crontab
+	export DISPLAY=:0.0 # (it's needed to get the desktop size)
+fi
 
 apod_get --archive \
          --path=$path $1

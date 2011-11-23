@@ -7,11 +7,11 @@ trap boom ERR
 set_background() {
 	# Appropriate for gnome
 	# Note that gconftool of course needs a full path (not relative)
-	#gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
+	gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
 
 	# Appropriate for pekwm, etc
 	#hsetroot -center "$1"
-	feh --bg-center "$1"
+	# feh --bg-center "$1"
 
 	return;
 }

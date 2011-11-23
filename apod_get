@@ -79,13 +79,15 @@ my $img_sym  = $opts{path_syms} . '/' . $apod->filename;
 my $dsc_path = "$img_path.txt";
 my $dsc_sym  = $opts{path_syms} . '/' . $apod->filename . '.txt';
 
-die "Already got \"$img_path\".\n" if -e $img_path;
+if(-e $img_path) {
+	print "Already got \"$img_path\".\n";
+} else {
+	$apod->save_image();
+	print "Saved \"$img_path\"\n";
 
-$apod->save_image();
-print "Saved \"$img_path\"\n";
-
-$apod->save_description();
-print "Saved \"$dsc_path\"\n";
+	$apod->save_description();
+	print "Saved \"$dsc_path\"\n";
+}
 
 # Very paranoid archiving since we want to delete any old symlinks still 
 # around in "latest/", but want to prevent user error from deleting other
