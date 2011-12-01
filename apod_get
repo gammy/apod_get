@@ -11,6 +11,9 @@ use warnings;
 use strict;
 use Getopt::Long;
 use File::Basename;
+
+use FindBin;
+use lib "$FindBin::Bin"; # Add this directory to library path
 use APOD;
 
 use constant DIR_SYMLINKS => 'latest';

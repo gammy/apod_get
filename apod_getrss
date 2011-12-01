@@ -21,6 +21,8 @@ my $feed = $parser->parse_string($xml);
 
 print $feed->item_count . " items.\n";
 
+use FindBin;
+use lib "$FindBin::Bin"; # Add this directory to library path
 my $apod = new APOD();
 
 for my $item ($feed->query('//item')) {

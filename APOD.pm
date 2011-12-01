@@ -43,7 +43,6 @@ use strict;
  $new_dest = $apod->destination("/new/destination/");
  
 =cut
-
 package APOD;
 
 use base qw/HTML::Parser/;
@@ -105,6 +104,7 @@ sub peek {
 sub get_image {
 	my $self = shift;
 	my $url = $self->{url};
+
 	$self->{image} = get($url) or croak "Can't get \"$url\"!";
 }
 

@@ -6,7 +6,7 @@ if [ ! $DISPLAY ]; then     # DISPLAY isn't set by crontab
 	export DISPLAY=:0.0 # (it's needed to get the desktop size)
 fi
 
-PATH="$PATH:$(pwd)"         # In case we're not globally installed
+PATH="$PATH:$(dirname $0)"  # In case we're not globally installed
 
 apod_get --archive \
          --path=$path $1
