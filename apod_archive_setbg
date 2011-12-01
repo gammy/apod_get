@@ -10,6 +10,5 @@ apod_get --archive \
          --path=$path $1
 
 apod_setbg -t $latest/*.txt \
-           -i $latest/*.jpg \
+           -i $(find $latest/ -type l -not -iname "*.txt") \
 	   -o $path/annotated.png \
-#	   -s 1920x1080 # Hardcode if unable to autodetect
