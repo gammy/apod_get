@@ -13,9 +13,10 @@ set_background() {
 	gconftool-2 -t str -s /desktop/gnome/background/picture_options "zoom"
 	gconftool-2 -t str -s /desktop/gnome/background/picture_filename "$1"
 
-	# Appropriate for pekwm, etc
+	# Other methods of setting the background
 	#hsetroot -center "$1"
 	# feh --bg-center "$1"
+	#         fbsetbg "$1"
 
 	return;
 }
@@ -28,8 +29,8 @@ boom() {
 usage() {
 	     echo "Usage: $(basename $0) [-t <text-file>] [-s <WxH>] -i <input image> -o <output image>"
 	     echo "-t foo.txt        Annotate image with content of 'foo.txt'"
-	     echo "-i in.png         Input file : Use 'foo.png' as background"
-	     echo "-o out.png        Output file: Output result to 'foo.png'"
+	     echo "-i in.png         Input file : Use 'in.png' as background"
+	     echo "-o out.png        Output file: Output result to 'out.png'"
 	     echo "-s 1024x600       Set result image size to 1024x600"
 	     echo
 }

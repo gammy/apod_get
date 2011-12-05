@@ -30,11 +30,11 @@ sub help {
 	printf("Usage: %s [args] [URL]
   --path         destination path (default '%s')
   --archive      In addition to normal operation, create symlinks to
-		 the files in \"<path>/%s\".
+		 the files in \"<path>/%s/\".
 ", 
 	basename($0),
 	$defaults{path},
-	$defaults{path_syms});
+	DIR_SYMLINKS);
 
 }
 
