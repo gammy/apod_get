@@ -160,7 +160,7 @@ sub start {
 		}
 		$text_buf = '';
 	}elsif($tagname eq 'a') {
-		if($attr->{href}=~m#(image/.*)#s) {
+		if(defined $attr->{href} && $attr->{href}=~m#(image/.*)#s) {
 			if (! $path_found) {
 				$self->{url}      = BASE_URL . '/' . $1;
 				$self->{filename} = substr($self->{url}, 
