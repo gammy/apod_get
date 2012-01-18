@@ -33,21 +33,16 @@ linnea_annotate:
 	captioned images.
 
 font/:
-	A free truetype font.
+	A free truetype font which is used by default for the annotator.
 
 NOTES:
-
-For the scripts to run, the Perl module and scripts need to be accessible via
-@INC and $PATH (ie, they need to be globally installed or run from the same
-directory as the files are in)	       
 
 linnea_annotate (used by apod_setbg) can't automatically determine the desktop
 size (the '--desktop-size' option) if it's run from an other user since it needs
 all your environment variables and such to do it. Use the '-s'-option for 
 apod_setbg to set the desktop dimension manually.
 
-linnea_annotate will also need the path to a font, which is unfortunate as it
-is currently hardcoded into apod_setbg. Sorry about that ;)
-
-You can modify how the background is to be set by changing the "background_set" 
-subroutine at the top of apod_setbg.
+You can modify how the background is to be set by setting the APOD_BG_SET
+environment variable. For example:
+    $ export APOD_BG_SET="hsetroot --center"
+apod_setbg will try a few alternatives if it isn't set.
