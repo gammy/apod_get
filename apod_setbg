@@ -69,10 +69,16 @@ else
 Do something like \e[1mexport APOD_BG_SET=\"feh --bg-fill\"\e[0m to set it.
 In the meantime, let's try a few alternatives which you might have.\n"
 
+	# Some entries shamelessly stolen from awsetbg
 	bgtry[0]='fbsetbg' 
-	bgtry[1]='hsetroot -center'
+	bgtry[1]='hsetroot -full'
 	bgtry[2]='feh --bg-fill'
-	bgtry[3]='gconftool-2 -t str -s /desktop/gnome/background/picture_options "zoom"; gconftool-2 -t str -s /desktop/gnome/background/picture_filename'
+	bgtry[3]='esetroot -fit'
+	bgtry[4]='habak -mS'
+	bgtry[5]='qiv -m -root'
+	bgtry[6]='chbg -once -mode smart -max_grow 100 -max_size 100'
+	bgtry[7]='xsri --center --center-y --scale-width=100 --scale-height=100 --keep-aspect'
+	bgtry[8]='gconftool-2 -t str -s /desktop/gnome/background/picture_options zoom; gconftool-2 -t str -s /desktop/gnome/background/picture_filename'
 
 	failed=1
 	for try in "${bgtry[@]}"; do
@@ -80,7 +86,7 @@ In the meantime, let's try a few alternatives which you might have.\n"
 		APOD_BG_SET="$try"
 
 		echo -n "Trying '$APOD_BG_SET \"$file_dst\"': "
-		$APOD_BG_SET "$file_dst"
+		eval $APOD_BG_SET "$file_dst"
 
 		if [ $? == 0 ]; then
 			failed=0
