@@ -2,8 +2,6 @@
 
 font=$(dirname $0)/font/Istok-Regular.ttf
 
-trap boom ERR
-
 boom() {
 	echo "Fatal error."
 	exit 1
@@ -61,8 +59,38 @@ linnea_annotate $opt_size \
 		--font-pts=12 \
 		--valign=bottom \
                 "$file_src" \
-		"$file_dst"
+		"$file_dst" || boom
 
-echo "Setting \"$file_dst\" as background."
-echo $APOD_BG_SET \"$file_dst\"
-$APOD_BG_SET "$file_dst"
+if [ "$APOD_BG_SET" ]; then
+	echo $APOD_BG_SET \"$file_dst\"
+	$APOD_BG_SET "$file_dst" || boom
+else
+	echo -e "\nEnvironment variable APOD_BG_SET is unset!
+Do something like \e[1mexport APOD_BG_SET=\"feh --bg-fill\"\e[0m to set it.
+In the meantime, let's try a few alternatives which you might have.\n"
+
+	bgtry[0]='fbsetbg' 
+	bgtry[1]='hsetroot -center'
+	bgtry[2]='feh --bg-fill'
+	bgtry[3]='gconftool-2 -t str -s /desktop/gnome/background/picture_options "zoom"; gconftool-2 -t str -s /desktop/gnome/background/picture_filename'
+
+	failed=1
+	for try in "${bgtry[@]}"; do
+
+		APOD_BG_SET="$try"
+
+		echo -n "Trying '$APOD_BG_SET \"$file_dst\"': "
+		$APOD_BG_SET "$file_dst"
+
+		if [ $? == 0 ]; then
+			failed=0
+			echo "Success!"
+			break;
+		fi
+	done
+
+	if [ $failed = 1 ]; then
+		echo "Exhausted all tries - GIVING UP."
+		exit 1
+	fi
+fi
