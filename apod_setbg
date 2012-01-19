@@ -1,65 +1,28 @@
 #!/bin/bash
 
-font=$(dirname $0)/font/Istok-Regular.ttf
-
 boom() {
 	echo "Fatal error."
 	exit 1
 }
 
-usage() {
-	     echo "Usage: $(basename $0) [-t <text-file>] [-s <WxH>] -i <input image> -o <output image>"
-	     echo "-t foo.txt        Annotate image with content of 'foo.txt'"
-	     echo "-i in.png         Input file : Use 'in.png' as background"
-	     echo "-o out.png        Output file: Output result to 'out.png'"
-	     echo "-s 1024x600       Set result image size to 1024x600"
-	     echo
-}
+PATH="$PATH:$(dirname $0)"  # In case we're not globally installed
+file_dst=${@: -1:1}
+font=$(dirname $0)/font/Istok-Regular.ttf
 
-opt_text=
-file_src=
-file_dst=
-opt_size="--desktop-size"
-
-while getopts “ht:i:o:s:” opt; do
-	case $opt in
-		i)
-			file_src=$OPTARG
-			;;
-		o)
-			file_dst=$OPTARG
-			;;
-		t)
-			opt_text="--text-file=${OPTARG}"
-			;;
-		s)
-			opt_size="--size=$OPTARG"
-			;;
-		h)
-			usage
-			exit
-			;;
-	esac
-done
-
-if [[ -z ${file_src} ]] || [[ -z ${file_dst} ]]; then
-	usage
-	exit
+if [ ! $DISPLAY ]; then     # DISPLAY isn't set by crontab
+	export DISPLAY=:0.0 # (it's needed to get the desktop size)
 fi
 
-if [ ! -f ${font} ]; then
-	echo Unable to find \"${font}\": Please edit $0 to specify a working \
+if [ ! -f $font ]; then
+	echo Unable to find \"$font\": Please edit $0 to specify a working \
 	font path.
 	exit
 fi
 
-linnea_annotate $opt_size \
-		$opt_text \
-		--font-file="$font" \
+linnea_annotate --font-file="$font" \
 		--font-pts=12 \
 		--valign=bottom \
-                "$file_src" \
-		"$file_dst" || boom
+		$@ || boom
 
 if [ "$APOD_BG_SET" ]; then
 	echo $APOD_BG_SET \"$file_dst\"

@@ -1,4 +1,5 @@
 #!/bin/bash
+opt_size="--desktop-size" # To hardcode, set to "--size=1920x1024"
 path=$HOME/.APOD
 latest=$path/latest
 
@@ -11,7 +12,7 @@ PATH="$PATH:$(dirname $0)"  # In case we're not globally installed
 apod_get --archive \
          --path=$path $1
 
-apod_setbg -t $latest/*.txt \
-           -i $(find $latest/ -type l -not -iname "*.txt") \
-	   -o $path/annotated.png \
-#	   -s 1920x1080 # Hardcode if unable to autodetect
+apod_setbg --text-file="$(ls $latest/*.txt)" \
+	   $opt_size \
+	   $(find $latest -type l -not -iname "*.txt") \
+	   $path/annotated.png

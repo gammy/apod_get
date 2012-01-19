@@ -132,7 +132,7 @@ my $result = GetOptions ("text-bg=s"          => \$opts{text_bg},
 
 if(@ARGV != 2) {
 	help();
-	exit;
+	exit 1;
 }
 
 # Container hashes
