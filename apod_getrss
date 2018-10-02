@@ -8,9 +8,11 @@
 use warnings;
 use strict;
 
-use APOD;
 use LWP::Simple;
 use XML::RSS::Parser;
+use FindBin;
+use lib "$FindBin::Bin"; # Add this directory to library path
+use APOD;
 
 use constant FEED_URL => "http://apod.nasa.gov/apod.rss";
 
@@ -27,38 +29,38 @@ my $apod = new APOD();
 
 for my $item ($feed->query('//item')) {
 
-	my $title = $item->query('title')->text_content;
-	my $link = $item->query('link')->text_content;
+    my $title = $item->query('title')->text_content;
+    my $link = $item->query('link')->text_content;
 
-	$| = 1;
+    $| = 1;
 
-	print "\"$title\": ";
+    print "\"$title\": ";
 
-	$apod->peek($link);
+    $apod->peek($link);
 
-	$| = 0;
+    $| = 0;
 
-	if(! $apod->description) {
-		print "It doesn't seem like we could parse the page.\n";
-		next;
-	}
+    if(! $apod->description) {
+        print "It doesn't seem like we could parse the page.\n";
+        next;
+    }
 
-	if(! $apod->url) {
-		print "No image found (perhaps it's a video today).\n";
-		next;
-	}
+    if(! $apod->url) {
+        print "No image found (perhaps it's a video today).\n";
+        next;
+    }
 
-	my $img_path = $apod->destination . '/' . $apod->filename;
-	my $dsc_path = "$img_path.txt";
+    my $img_path = $apod->destination . '/' . $apod->filename;
+    my $dsc_path = "$img_path.txt";
 
-	if(-e $img_path) {
-		print "Already got \"$img_path\".\n";
-		next;
-	}
+    if(-e $img_path) {
+        print "Already got \"$img_path\".\n";
+        next;
+    }
 
-	$apod->save_image();
-	$apod->save_description();
+    $apod->save_image();
+    $apod->save_description();
 
-	print "Ok.\n";
+    print "Ok.\n";
 }
 

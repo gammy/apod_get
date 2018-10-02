@@ -4,7 +4,7 @@ path=$HOME/.APOD
 latest=$path/latest
 
 if [ ! $DISPLAY ]; then     # DISPLAY isn't set by crontab
-	export DISPLAY=:0.0 # (it's needed to get the desktop size)
+    export DISPLAY=:0.0 # (it's needed to get the desktop size)
 fi
 
 PATH="$PATH:$(dirname $0)"  # In case we're not globally installed
@@ -13,6 +13,6 @@ apod_get --archive \
          --path=$path $1
 
 apod_setbg --text-file="$(ls $latest/*.txt)" \
-	   $opt_size \
-	   $(find $latest -type l -not -iname "*.txt") \
-	   $path/annotated.png
+       $opt_size \
+       $(find $latest -type l -not -iname "*.txt") \
+       $path/annotated.png

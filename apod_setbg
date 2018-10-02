@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 boom() {
-	echo "Fatal error."
-	exit 1
+    echo "Fatal error."
+    exit 1
 }
 
 PATH="$PATH:$(dirname $0)"  # In case we're not globally installed
@@ -10,56 +10,56 @@ file_dst=${@: -1:1}
 font=$(dirname $0)/font/Istok-Regular.ttf
 
 if [ ! $DISPLAY ]; then     # DISPLAY isn't set by crontab
-	export DISPLAY=:0.0 # (it's needed to get the desktop size)
+    export DISPLAY=:0.0 # (it's needed to get the desktop size)
 fi
 
 if [ ! -f $font ]; then
-	echo Unable to find \"$font\": Please edit $0 to specify a working \
-	font path.
-	exit
+    echo Unable to find \"$font\": Please edit $0 to specify a working \
+    font path.
+    exit
 fi
 
 linnea_annotate --font-file="$font" \
-		--font-pts=12 \
-		--valign=bottom \
-		$@ || boom
+        --font-pts=12 \
+        --valign=bottom \
+        $@ || boom
 
 if [ "$APOD_BG_SET" ]; then
-	echo $APOD_BG_SET \"$file_dst\"
-	$APOD_BG_SET "$file_dst" || boom
+    echo $APOD_BG_SET \"$file_dst\"
+    $APOD_BG_SET "$file_dst" || boom
 else
-	echo -e "\nEnvironment variable APOD_BG_SET is unset!
+    echo -e "\nEnvironment variable APOD_BG_SET is unset!
 Do something like \e[1mexport APOD_BG_SET=\"feh --bg-fill\"\e[0m to set it.
 In the meantime, let's try a few alternatives which you might have.\n"
 
-	# Some entries shamelessly stolen from awsetbg
-	bgtry[0]='fbsetbg' 
-	bgtry[1]='hsetroot -full'
-	bgtry[2]='feh --bg-fill'
-	bgtry[3]='esetroot -fit'
-	bgtry[4]='habak -mS'
-	bgtry[5]='qiv -m -root'
-	bgtry[6]='chbg -once -mode smart -max_grow 100 -max_size 100'
-	bgtry[7]='xsri --center --center-y --scale-width=100 --scale-height=100 --keep-aspect'
-	bgtry[8]='gconftool-2 -t str -s /desktop/gnome/background/picture_options zoom; gconftool-2 -t str -s /desktop/gnome/background/picture_filename'
+    # Some entries shamelessly stolen from awsetbg
+    bgtry[0]='fbsetbg' 
+    bgtry[1]='hsetroot -full'
+    bgtry[2]='feh --bg-fill'
+    bgtry[3]='esetroot -fit'
+    bgtry[4]='habak -mS'
+    bgtry[5]='qiv -m -root'
+    bgtry[6]='chbg -once -mode smart -max_grow 100 -max_size 100'
+    bgtry[7]='xsri --center --center-y --scale-width=100 --scale-height=100 --keep-aspect'
+    bgtry[8]='gconftool-2 -t str -s /desktop/gnome/background/picture_options zoom; gconftool-2 -t str -s /desktop/gnome/background/picture_filename'
 
-	failed=1
-	for try in "${bgtry[@]}"; do
+    failed=1
+    for try in "${bgtry[@]}"; do
 
-		APOD_BG_SET="$try"
+        APOD_BG_SET="$try"
 
-		echo -n "Trying '$APOD_BG_SET \"$file_dst\"': "
-		eval $APOD_BG_SET "$file_dst"
+        echo -n "Trying '$APOD_BG_SET \"$file_dst\"': "
+        eval $APOD_BG_SET "$file_dst"
 
-		if [ $? == 0 ]; then
-			failed=0
-			echo "Success!"
-			break;
-		fi
-	done
+        if [ $? == 0 ]; then
+            failed=0
+            echo "Success!"
+            break;
+        fi
+    done
 
-	if [ $failed = 1 ]; then
-		echo "Exhausted all tries - GIVING UP."
-		exit 1
-	fi
+    if [ $failed = 1 ]; then
+        echo "Exhausted all tries - GIVING UP."
+        exit 1
+    fi
 fi

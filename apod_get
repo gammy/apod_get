@@ -19,44 +19,44 @@ use APOD;
 use constant DIR_SYMLINKS => 'latest';
 
 my %defaults = (
-	"path"        => '.',
-	"archive"     => ''
+    "path"        => '.',
+    "archive"     => ''
 
 );
 
 my %opts = %defaults;
 
 sub help {
-	printf("Usage: %s [args] [URL]
+    printf("Usage: %s [args] [URL]
   --path         destination path (default '%s')
   --archive      In addition to normal operation, create symlinks to
-		 the files in \"<path>/%s/\".
+         the files in \"<path>/%s/\".
 ", 
-	basename($0),
-	$defaults{path},
-	DIR_SYMLINKS);
+    basename($0),
+    $defaults{path},
+    DIR_SYMLINKS);
 
 }
 
 ##############################################################################
 
 my $result = GetOptions ("archive" => sub {$opts{archive} = 1;},
-	                 "path=s"  => \$opts{path},
-			 "help"    => sub {help; exit;});
+                     "path=s"  => \$opts{path},
+             "help"    => sub {help; exit;});
 
 $opts{path_syms} = $opts{path} . '/' . DIR_SYMLINKS;
 
 if($opts{archive}) {
 
-	if(! -d $opts{path}) {
-		mkdir $opts{path}, 0755 
-			or die "Can't mkdir \"$opts{path}\": $!";
-	}
+    if(! -d $opts{path}) {
+        mkdir $opts{path}, 0755 
+            or die "Can't mkdir \"$opts{path}\": $!";
+    }
 
-	if(! -d $opts{path_syms}) {
-		mkdir $opts{path_syms}, 0755
-			or die "Can't mkdir \"" . $opts{path_syms} . "\": $!";
-	}
+    if(! -d $opts{path_syms}) {
+        mkdir $opts{path_syms}, 0755
+            or die "Can't mkdir \"" . $opts{path_syms} . "\": $!";
+    }
    
 }
 
@@ -65,9 +65,9 @@ my $apod = new APOD();
 $apod->destination($opts{path});
 
 if(@ARGV) {
-	$apod->peek(shift(@ARGV)) or die "$!";
+    $apod->peek(shift(@ARGV)) or die "$!";
 } else {
-	$apod->peek() or die "$!";
+    $apod->peek() or die "$!";
 }
 
 # There should always be a description
@@ -83,13 +83,13 @@ my $dsc_path = "$img_path.txt";
 my $dsc_sym  = $opts{path_syms} . '/' . $apod->filename . '.txt';
 
 if(-e $img_path) {
-	print "Already got \"$img_path\".\n";
+    print "Already got \"$img_path\".\n";
 } else {
-	$apod->save_image();
-	print "Saved \"$img_path\"\n";
+    $apod->save_image();
+    print "Saved \"$img_path\"\n";
 
-	$apod->save_description();
-	print "Saved \"$dsc_path\"\n";
+    $apod->save_description();
+    print "Saved \"$dsc_path\"\n";
 }
 
 # Very paranoid archiving since we want to delete any old symlinks still 
@@ -102,23 +102,23 @@ if(-e $img_path) {
 
 if($opts{archive}) {
 
-	my $count = 0;
-	my @list = glob($opts{path_syms} . '/*');
+    my $count = 0;
+    my @list = glob($opts{path_syms} . '/*');
 
-	if($#list >= 2) {
-		die "Found " . @list . " files in \"" . $opts{path_syms} . 
-		"\" when only expecting 2! Abort.\n";
-	}
+    if($#list >= 2) {
+        die "Found " . @list . " files in \"" . $opts{path_syms} . 
+        "\" when only expecting 2! Abort.\n";
+    }
 
-	for my $file (@list) {
-		unless(-l $file) {
-			die "Detected non-symlink in \"" .
-			    $opts{path_syms} . "\"! Abort.\n";
-		}
-	}
+    for my $file (@list) {
+        unless(-l $file) {
+            die "Detected non-symlink in \"" .
+                $opts{path_syms} . "\"! Abort.\n";
+        }
+    }
 
-	unlink $_ for @list;
-	
-	symlink($img_path, $img_sym);
-	symlink($dsc_path, $dsc_sym);
+    unlink $_ for @list;
+    
+    symlink($img_path, $img_sym);
+    symlink($dsc_path, $dsc_sym);
 }
