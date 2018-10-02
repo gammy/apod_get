@@ -47,12 +47,14 @@ package APOD;
 
 use base qw/HTML::Parser/;
 
-use constant BASE_URL     => 'http://apod.nasa.gov';
+use constant BASE_URL     => 'https://apod.nasa.gov/apod';
+use constant BASE_PAGE    => BASE_URL . '/astropix.html';
 
 use Carp;
 use LWP::Simple;
 use HTML::Parser;
 
+my $ua;
 my $text_buf;
 my $path_found = 0;
 
@@ -92,11 +94,17 @@ sub peek {
 	if(@_) {
 		$self->{page_url} = shift;
 	} else {
-		$self->{page_url} = BASE_URL;
+		$self->{page_url} = BASE_PAGE;
 	}
 
-	my $html = get($self->{page_url}) or 
-		croak "Failed to get \"" . $self->{page_url} . "\"";
+    $ua = LWP::UserAgent->new();
+    my $html;
+	my $ret = $ua->get($self->{page_url});
+    if($ret->is_success) {
+        $html = $ret->decoded_content;
+    } else {
+		croak "Failed to get \"" . $self->{page_url} . "\": " . $ret->status_line;
+    }
 
 	$self->parse($html);
 }
@@ -105,7 +113,12 @@ sub get_image {
 	my $self = shift;
 	my $url = $self->{url};
 
-	$self->{image} = get($url) or croak "Can't get \"$url\"!";
+    my $ret = $ua->get($url);
+    if($ret->is_success) {
+        $self->{image} = $ret->decoded_content;
+    } else {
+        croak "Can't get \"$url\": " . $ret->status_line;
+    }
 }
 
 sub save_image {
